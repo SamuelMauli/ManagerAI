@@ -1,0 +1,35 @@
+# Dependências
+/node_modules
+
+# Build
+/dist
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Arquivos de ambiente
+.env
+.env.local
+.env.*.local
+
+# Arquivos de cache e temporários do Vite
+.vite/
+.next/
+.vercel/
+
+# Ambiente virtual Python
+.venv/
+
+# Arquivos de sistema operacional
+.DS_Store
+Thumbs.db
+
+# Arquivos de configuração de editores
+.vscode/
+.idea/
+
+# Relatórios de cobertura de testes
+/coverage
