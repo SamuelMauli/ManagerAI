@@ -1,0 +1,59 @@
+{
+  "app": {
+    "title": "ManagerAI"
+  },
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "emails": "Emails",
+    "tasks": "Tasks",
+    "chat": "Chat",
+    "calendar": "Calendar",
+    "settings": "Settings",
+    "collapse": "Collapse",
+    "expand": "Expand"
+  },
+  "dashboard": {
+    "welcome": "Welcome to your Personal AI Assistant.",
+    "unreadEmails": "Unread Emails",
+    "pendingTasks": "Pending Tasks",
+    "activeProjects": "Active Projects",
+    "activityFeed": "Activity Feed"
+  },
+  "emails": {
+    "subtitle": "Organize, search, and manage your inboxes.",
+    "newButton": "New Email"
+  },
+  "tasks": {
+    "subtitle": "Keep track of your pending activities and projects.",
+    "newButton": "New Task"
+  },
+  "calendar": {
+    "subtitle": "View and manage your events and appointments.",
+    "newButton": "New Event"
+  },
+  "chat": {
+    "subtitle": "Chat directly with your personal AI.",
+    "welcomeMessage": "Hello! How can I help you today?",
+    "inputPlaceholder": "Type your message here..."
+  },
+  "settings": {
+    "description": "Here you can configure integrations, language, and other preferences.",
+    "languageTitle": "Language",
+    "languageDescription": "Select your preferred language.",
+    "languagePlaceholder": "Select a language"
+  },
+  "jobs": {
+    "youtrackTitle": "YouTrack Job",
+    "youtrackDescription": "Force the synchronization and execution of YouTrack tasks.",
+    "youtrackButton": "Update and Run Job",
+    "emailTitle": "Email Configuration",
+    "emailDescription": "Enter your credentials to sync your emails.",
+    "emailAddressPlaceholder": "Your email address",
+    "emailCredentialsPlaceholder": "Your password or app key",
+    "emailUpdateButton": "Update Email Job"
+  },
+  "common": {
+    "featureComingSoon": "This feature is under development and will be available soon.",
+    "contentPlaceholder": "The content for this section will be displayed here."
+  }
+}

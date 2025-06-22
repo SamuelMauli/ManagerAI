@@ -1,0 +1,59 @@
+{
+  "app": {
+    "title": "ManagerAI"
+  },
+  "sidebar": {
+    "dashboard": "Panel",
+    "emails": "Correos",
+    "tasks": "Tareas",
+    "chat": "Chat",
+    "calendar": "Calendario",
+    "settings": "Configuración",
+    "collapse": "Contraer",
+    "expand": "Expandir"
+  },
+  "dashboard": {
+    "welcome": "Bienvenido a tu Asistente Personal con IA.",
+    "unreadEmails": "Correos no leídos",
+    "pendingTasks": "Tareas Pendientes",
+    "activeProjects": "Proyectos Activos",
+    "activityFeed": "Feed de Actividad"
+  },
+  "emails": {
+    "subtitle": "Organiza, busca y gestiona tus bandejas de entrada.",
+    "newButton": "Nuevo Correo"
+  },
+  "tasks": {
+    "subtitle": "Realiza un seguimiento de tus actividades y proyectos pendientes.",
+    "newButton": "Nueva Tarea"
+  },
+  "calendar": {
+    "subtitle": "Consulta y gestiona tus eventos y citas.",
+    "newButton": "Nuevo Evento"
+  },
+  "chat": {
+    "subtitle": "Chatea directamente con tu IA personal.",
+    "welcomeMessage": "¡Hola! ¿Cómo puedo ayudarte hoy?",
+    "inputPlaceholder": "Escribe tu mensaje aquí..."
+  },
+  "settings": {
+    "description": "Aquí puedes configurar integraciones, idioma y otras preferencias.",
+    "languageTitle": "Idioma",
+    "languageDescription": "Selecciona tu idioma preferido.",
+    "languagePlaceholder": "Selecciona un idioma"
+  },
+  "jobs": {
+    "youtrackTitle": "Job de YouTrack",
+    "youtrackDescription": "Forzar la sincronización y ejecución de las tareas de YouTrack.",
+    "youtrackButton": "Actualizar y Ejecutar Job",
+    "emailTitle": "Configuración de Correo",
+    "emailDescription": "Introduce tus credenciales para sincronizar tus correos.",
+    "emailAddressPlaceholder": "Tu dirección de correo",
+    "emailCredentialsPlaceholder": "Tu contraseña o clave de aplicación",
+    "emailUpdateButton": "Actualizar Job de Correo"
+  },
+  "common": {
+    "featureComingSoon": "Esta función está en desarrollo y estará disponible pronto.",
+    "contentPlaceholder": "El contenido de esta sección se mostrará aquí."
+  }
+}

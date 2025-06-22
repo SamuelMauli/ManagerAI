@@ -1,0 +1,59 @@
+{
+  "app": {
+    "title": "ManagerAI"
+  },
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "emails": "E-Mails",
+    "tasks": "Aufgaben",
+    "chat": "Chat",
+    "calendar": "Kalender",
+    "settings": "Einstellungen",
+    "collapse": "Einklappen",
+    "expand": "Ausklappen"
+  },
+  "dashboard": {
+    "welcome": "Willkommen bei deinem persönlichen KI-Assistenten.",
+    "unreadEmails": "Ungelesene E-Mails",
+    "pendingTasks": "Ausstehende Aufgaben",
+    "activeProjects": "Aktive Projekte",
+    "activityFeed": "Aktivitäts-Feed"
+  },
+  "emails": {
+    "subtitle": "Organisiere, suche und verwalte deine Posteingänge.",
+    "newButton": "Neue E-Mail"
+  },
+  "tasks": {
+    "subtitle": "Behalte den Überblick über deine anstehenden Aktivitäten und Projekte.",
+    "newButton": "Neue Aufgabe"
+  },
+  "calendar": {
+    "subtitle": "Zeige und verwalte deine Ereignisse und Termine.",
+    "newButton": "Neues Ereignis"
+  },
+  "chat": {
+    "subtitle": "Chatte direkt mit deiner persönlichen KI.",
+    "welcomeMessage": "Hallo! Wie kann ich dir heute helfen?",
+    "inputPlaceholder": "Gib deine Nachricht hier ein..."
+  },
+  "settings": {
+    "description": "Hier kannst du Integrationen, Sprache und andere Einstellungen konfigurieren.",
+    "languageTitle": "Sprache",
+    "languageDescription": "Wähle deine bevorzugte Sprache.",
+    "languagePlaceholder": "Sprache auswählen"
+  },
+  "jobs": {
+    "youtrackTitle": "YouTrack-Job",
+    "youtrackDescription": "Synchronisierung und Ausführung von YouTrack-Aufgaben erzwingen.",
+    "youtrackButton": "Job aktualisieren und ausführen",
+    "emailTitle": "E-Mail-Konfiguration",
+    "emailDescription": "Gib deine Anmeldedaten ein, um deine E-Mails zu synchronisieren.",
+    "emailAddressPlaceholder": "Deine E-Mail-Adresse",
+    "emailCredentialsPlaceholder": "Dein Passwort oder App-Schlüssel",
+    "emailUpdateButton": "E-Mail-Job aktualisieren"
+  },
+  "common": {
+    "featureComingSoon": "Diese Funktion befindet sich in der Entwicklung und wird bald verfügbar sein.",
+    "contentPlaceholder": "Der Inhalt für diesen Bereich wird hier angezeigt."
+  }
+}

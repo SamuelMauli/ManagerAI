@@ -1,0 +1,59 @@
+{
+  "app": {
+    "title": "ManagerAI"
+  },
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "emails": "E-mails",
+    "tasks": "Tarefas",
+    "calendar": "Calendário",
+    "chat": "Chat",
+    "settings": "Configurações",
+    "collapse": "Recolher",
+    "expand": "Expandir"
+  },
+  "dashboard": {
+    "welcome": "Bem-vindo ao seu Assistente Pessoal com IA.",
+    "unreadEmails": "E-mails não lidos",
+    "pendingTasks": "Tarefas Pendentes",
+    "activeProjects": "Projetos Ativos",
+    "activityFeed": "Feed de Atividades"
+  },
+  "emails": {
+    "subtitle": "Organize, busque e gerencie suas caixas de entrada.",
+    "newButton": "Novo E-mail"
+  },
+  "tasks": {
+    "subtitle": "Acompanhe suas atividades e projetos pendentes.",
+    "newButton": "Nova Tarefa"
+  },
+  "calendar": {
+    "subtitle": "Veja e gerencie seus eventos e compromissos.",
+    "newButton": "Novo Evento"
+  },
+  "chat": {
+    "subtitle": "Converse diretamente com a sua IA pessoal.",
+    "welcomeMessage": "Olá! Como posso te ajudar hoje?",
+    "inputPlaceholder": "Digite sua mensagem aqui..."
+  },
+  "settings": {
+    "description": "Aqui você poderá configurar as integrações, idioma e outras preferências.",
+    "languageTitle": "Idioma",
+    "languageDescription": "Selecione o seu idioma de preferência.",
+    "languagePlaceholder": "Selecione um idioma"
+  },
+  "jobs": {
+    "youtrackTitle": "Job do YouTrack",
+    "youtrackDescription": "Force a sincronização e execução das tarefas do YouTrack.",
+    "youtrackButton": "Atualizar e Executar Job",
+    "emailTitle": "Configuração de E-mail",
+    "emailDescription": "Insira suas credenciais para sincronizar seus e-mails.",
+    "emailAddressPlaceholder": "Seu endereço de e-mail",
+    "emailCredentialsPlaceholder": "Sua senha ou chave de aplicativo",
+    "emailUpdateButton": "Atualizar Job de E-mail"
+  },
+  "common": {
+    "featureComingSoon": "Este recurso está em desenvolvimento e estará disponível em breve.",
+    "contentPlaceholder": "O conteúdo desta seção será exibido aqui."
+  }
+}

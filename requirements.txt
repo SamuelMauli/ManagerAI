@@ -1,0 +1,23 @@
+# Framework da API
+fastapi
+uvicorn[standard]
+
+# Banco de Dados e ORM
+sqlalchemy
+mysqlclient
+alembic # Para migrações de banco de dados
+
+# Validação de dados e configurações
+pydantic
+pydantic-settings
+
+# Jobs agendados
+apscheduler
+
+# Ferramentas para APIs externas
+requests
+groq
+
+# APIs do Google
+google-api-python-client
+google-auth-oauthlib

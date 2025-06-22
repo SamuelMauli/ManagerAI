@@ -1,0 +1,47 @@
+# personal-ai-manager/docker-compose.yml
+
+version: '3.8'
+
+services:
+  # Serviço da Aplicação Python (FastAPI)
+  app:
+    build:
+      context: .
+      dockerfile: docker/app.Dockerfile
+    container_name: personal_ai_app
+    # O env_file carrega as variáveis do arquivo .env
+    env_file:
+      - .env
+    # Mapeia a porta 8000 do contêiner para a 8000 da sua máquina
+    ports:
+      - "8000:8000"
+    # Monta o código-fonte dentro do contêiner para live-reload
+    volumes:
+      - ./src:/app
+    # Garante que o banco de dados inicie antes da aplicação
+    depends_on:
+      - db
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # Serviço do Banco de Dados MySQL
+  db:
+    image: mysql:8.0
+    container_name: personal_ai_db
+    # Carrega as variáveis do .env para configurar o MySQL
+    env_file:
+      - .env
+    # Mapeia a porta 3306 para acesso externo (opcional, bom para debug)
+    ports:
+      - "3306:3306"
+    # Define um volume para persistir os dados do banco
+    volumes:
+      - mysql_data:/var/lib/mysql
+    # Configurações de saúde para garantir que o BD esteja pronto
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+# Define o volume nomeado para persistência dos dados
+volumes:
+  mysql_data:
