@@ -2,80 +2,55 @@ from sqlalchemy.orm import Session
 from ..models.setting import Setting
 from ..core.security import encrypt_data, decrypt_data
 from ..schemas.setting import EmailConfig
+from .google_service import get_gmail_service # Assuming google_service is set up
 
-def get_email_config(db: Session) -> dict:
-    """Retrieves email configuration from the database."""
-    email_entry = db.query(Setting).filter(Setting.key == "email_address").first()
-    creds_entry = db.query(Setting).filter(Setting.key == "email_credentials").first()
+def save_email_config(db: Session, config: EmailConfig):
+    # This function is an example of how you might save encrypted settings
+    # You would call this from a settings API endpoint
+    encrypted_user = encrypt_data(config.smtp_user)
+    encrypted_pass = encrypt_data(config.smtp_pass)
     
-    if not email_entry or not creds_entry:
-        return {}
+    db_user = db.query(Setting).filter(Setting.key == "smtp_user").first()
+    if db_user:
+        db_user.value = encrypted_user
+    else:
+        db_user = Setting(key="smtp_user", value=encrypted_user)
+        db.add(db_user)
+
+    db_pass = db.query(Setting).filter(Setting.key == "smtp_pass").first()
+    if db_pass:
+        db_pass.value = encrypted_pass
+    else:
+        db_pass = Setting(key="smtp_pass", value=encrypted_pass)
+        db.add(db_pass)
         
-    return {
-        "email": email_entry.value,
-        "credentials": decrypt_data(creds_entry.value)
-    }
-
-def update_email_config(db: Session, config: EmailConfig):
-    """Updates or creates email configuration in the database."""
-    # Email Address
-    email_entry = db.query(Setting).filter(Setting.key == "email_address").first()
-    if email_entry:
-        email_entry.value = config.email
-    else:
-        email_entry = Setting(key="email_address", value=config.email)
-        db.add(email_entry)
-
-    # Encrypted Credentials
-    creds_entry = db.query(Setting).filter(Setting.key == "email_credentials").first()
-    encrypted_creds = encrypt_data(config.credentials)
-    if creds_entry:
-        creds_entry.value = encrypted_creds
-    else:
-        creds_entry = Setting(key="email_credentials", value=encrypted_creds)
-        db.add(creds_entry)
-    
     db.commit()
-    db.refresh(email_entry)
-    db.refresh(creds_entry)
-    return {"message": "Email configuration updated successfully."}
 
 
 def fetch_and_store_emails(db: Session):
     """
     Main function for the email job.
-    1. Gets config from the DB.
-    2. Connects to the Gmail API (placeholder).
-    3. Fetches unread emails.
-    4. Stores emails in the database.
+    1. Connects to the Gmail API.
+    2. Fetches unread emails.
+    3. Stores emails in the database (or performs other actions).
     """
     print("Executing email search job...")
     
-    config = get_email_config(db)
-    if not config:
-        print("Email configuration not found. Skipping job.")
-        return
+    try:
+        service = get_gmail_service()
+        
+        # Fetch unread emails
+        results = service.users().messages().list(userId='me', q="is:unread").execute()
+        messages = results.get('messages', [])
 
-    print(f"Connecting to Gmail for user: {config['email']}...")
-    
-    # --- GMAIL API CONNECTION LOGIC GOES HERE ---
-    # This is where you would use google-api-python-client
-    # to connect, authenticate, and fetch emails.
-    # For now, it remains a placeholder.
-    #
-    # Example placeholder logic:
-    # 1. Authenticate using stored credentials.
-    # 2. Search for emails (e.g., is:unread).
-    # 3. For each email found:
-    #    email_data = {
-    #        "message_id": "unique_id",
-    #        "sender": "sender@example.com",
-    #        "subject": "Email Subject",
-    #        "body": "This is the email body.",
-    #        "received_at": datetime.now()
-    #    }
-    #    new_email = Email(**email_data)
-    #    db.add(new_email)
-    #    db.commit()
-    
+        if not messages:
+            print("No unread messages found.")
+        else:
+            print(f"Found {len(messages)} unread messages.")
+            # Here you would process and store the emails
+            # For now, we just print the count
+    except Exception as e:
+        # This will catch errors if Google credentials are not yet set up
+        print(f"Could not fetch emails. Have you authenticated with Google? Error: {e}")
+
     print("Email search job finished.")

@@ -1,26 +1,15 @@
-# Framework da API
 fastapi
 uvicorn[standard]
-
-# Banco de Dados e ORM
 sqlalchemy
-mysqlclient
-alembic 
-
-# Validação de dados e configurações
-pydantic
+PyMySQL
+pydantic[email]
 pydantic-settings
-
-# Jobs agendados
+passlib[bcrypt]
+python-jose[cryptography]
+python-multipart
 apscheduler
-
-# Ferramentas para APIs externas
 requests
 groq
-
-# APIs do Google
 google-api-python-client
 google-auth-oauthlib
-
-# Criptografia
 cryptography

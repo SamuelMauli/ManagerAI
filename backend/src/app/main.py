@@ -1,43 +1,33 @@
 from fastapi import FastAPI
-from contextlib import asynccontextmanager
-from .database import engine
-from .models import base
-from .jobs.email_scheduler import scheduler
-from .routes import settings, jobs, dashboard, emails
+from fastapi.middleware.cors import CORSMiddleware
+from .database import Base, engine
+from .routes import auth, users
+from .routes import dashboard, emails, tasks, chat, settings, jobs
+from .core.config import settings
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """
-    Application lifespan context to start and stop background services.
-    """
-    # Create database tables if they don't exist
-    base.Base.metadata.create_all(bind=engine)
-    
-    # Start the job scheduler
-    scheduler.start()
-    print("Scheduler started...")
-    
-    yield
-    
-    # Stop the job scheduler on application shutdown
-    scheduler.shutdown()
-    print("Scheduler stopped.")
+Base.metadata.create_all(bind=engine)
 
-app = FastAPI(
-    title="ManagerAI Backend",
-    description="Your personal assistant for emails, tasks, and more.",
-    version="1.0.0",
-    lifespan=lifespan
+app = FastAPI(title=settings.PROJECT_NAME)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
-# Include all the new API routers
-app.include_router(settings.router)
-app.include_router(jobs.router)
-app.include_router(dashboard.router)
-app.include_router(emails.router)
+app.include_router(auth.router, prefix="/api", tags=["Authentication"])
+app.include_router(users.router, prefix="/api", tags=["Users"])
+app.include_router(dashboard.router, prefix="/api", tags=["Dashboard"])
+app.include_router(emails.router, prefix="/api", tags=["Emails"])
+app.include_router(tasks.router, prefix="/api", tags=["Tasks"])
+app.include_router(chat.router, prefix="/api", tags=["Chat"])
+app.include_router(settings.router, prefix="/api", tags=["Settings"])
+app.include_router(jobs.router, prefix="/api", tags=["Jobs"])
 
 
-@app.get("/api", tags=["Root"])
+@app.get("/api")
 def read_root():
-    """Root endpoint to check if the API is running."""
-    return {"message": "Welcome to the ManagerAI Backend!"}
+    return {"message": "Welcome to ManagerAI!"}
+

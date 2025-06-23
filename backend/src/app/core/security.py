@@ -1,23 +1,48 @@
 from cryptography.fernet import Fernet
+from datetime import datetime, timedelta
+from typing import Optional
+from passlib.context import CryptContext
+from jose import JWTError, jwt
 from .config import settings
 
-# Initialize Fernet with the secret key from settings
-# The key must be URL-safe base64-encoded. If it's not, generate one.
-# You can generate a key using: from cryptography.fernet import Fernet; Fernet.generate_key()
-try:
-    key = settings.SECRET_KEY.encode()
-    fernet = Fernet(key)
-except Exception as e:
-    raise ValueError("Invalid SECRET_KEY. Please provide a URL-safe base64-encoded key.") from e
+# --- Encryption for sensitive data like API keys or passwords ---
 
-def encrypt_data(data: str) -> str:
+import base64
+from hashlib import sha256
+
+# Derive a 32-byte key from the main secret key for Fernet
+key = base64.urlsafe_b64encode(sha256(settings.SECRET_KEY.encode()).digest())
+fernet = Fernet(key)
+
+def encrypt_data(data: str) -> bytes:
     """Encrypts a string."""
-    if not data:
-        return ""
-    return fernet.encrypt(data.encode()).decode()
+    return fernet.encrypt(data.encode())
 
-def decrypt_data(encrypted_data: str) -> str:
+def decrypt_data(encrypted_data: bytes) -> str:
     """Decrypts a string."""
-    if not encrypted_data:
-        return ""
-    return fernet.decrypt(encrypted_data.encode()).decode()
+    return fernet.decrypt(encrypted_data).decode()
+
+
+# --- Password Hashing for Users ---
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """Verifies a plain password against a hashed one."""
+    return pwd_context.verify(plain_password, hashed_password)
+
+def get_password_hash(password: str) -> str:
+    """Hashes a plain password."""
+    return pwd_context.hash(password)
+
+
+# --- JWT Access Tokens ---
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
+    """Creates a JWT access token."""
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+    return encoded_jwt

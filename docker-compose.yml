@@ -1,10 +1,33 @@
-# 'version' attribute removed
 services:
-  # Database Service (MySQL)
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/src:/app/src
+    env_file: .env # This tells compose to look for the .env file
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - managerai_net
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend/src:/app/src
+    depends_on:
+      - backend
+    networks:
+      - managerai_net
+
   db:
     image: mysql:8.0
-    container_name: managerai_db
-    restart: always
+    restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
@@ -14,38 +37,16 @@ services:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-
-  # Backend Service (FastAPI)
-  backend:
-    container_name: managerai_backend
-    build:
-      context: ./backend  # Path to the backend directory
-      dockerfile: Dockerfile
-    restart: always
-    env_file:
-      - .env # Load environment variables from .env file
-    volumes:
-      - ./backend/src:/app/src # Sync source code for live-reloading
-    ports:
-      - "8000:8000"
-    depends_on:
-      - db # Wait for the database to be ready before starting
-
-  # Frontend Service (React + Vite)
-  frontend:
-    container_name: managerai_frontend
-    build:
-      context: ./frontend # Path to the frontend directory
-      dockerfile: Dockerfile
-    restart: always
-    volumes:
-      - ./frontend:/app # Sync source code
-      - /app/node_modules # Avoids overwriting node_modules by local folder
-    ports:
-      - "5173:5173"
-    depends_on:
-      - backend # Optional: can wait for backend to start
+    networks:
+      - managerai_net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   mysql_data:
-    driver: local
+
+networks:
+  managerai_net:
