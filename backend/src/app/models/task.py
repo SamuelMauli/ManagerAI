@@ -12,7 +12,5 @@ class Task(Base):
     status = Column(String(100))
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     project_id = Column(String(255), ForeignKey("projects.youtrack_id"))
-    owner_id = Column(Integer, ForeignKey("users.id"))
     
     project = relationship("Project")
-    owner = relationship("User")

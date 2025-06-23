@@ -32,25 +32,37 @@
     "newButton": "Novo Evento"
   },
   "chat": {
-    "subtitle": "Converse diretamente com a sua IA pessoal.",
-    "welcomeMessage": "Olá! Como posso te ajudar hoje?",
-    "inputPlaceholder": "Digite sua mensagem aqui..."
+    "placeholder": "Digite sua mensagem aqui...",
+    "title": "Assistente Inteligente"
   },
   "settings": {
-    "description": "Aqui você poderá configurar as integrações, idioma e outras preferências.",
-    "languageTitle": "Idioma",
-    "languageDescription": "Selecione o seu idioma de preferência.",
-    "languagePlaceholder": "Selecione um idioma"
+      "languageTitle": "Idioma",
+      "languagePlaceholder": "Selecione o idioma",
+      "closeModal": "Fechar modal",
+      "youtrackTitle": "Configurações do YouTrack",
+      "youtrackUrlPlaceholder": "URL Base do YouTrack (ex: https://youtrack.example.com)",
+      "youtrackTokenPlaceholder": "Seu Token de Acesso Permanente do YouTrack",
+      "youtrackSaveSuccess": "Configurações do YouTrack salvas com sucesso!",
+      "youtrackSaveError": "Erro ao salvar as configurações do YouTrack.",
+      "emailTitle": "Configurações do Gmail",
+      "emailDescription": "Forneça o seu endereço de e-mail e uma senha de aplicativo gerada para o Gmail.",
+      "emailAddressPlaceholder": "Endereço de E-mail",
+      "emailCredentialsPlaceholder": "Senha de Aplicativo do Gmail",
+      "emailSaveSuccess": "Configurações de e-mail salvas com sucesso!",
+      "emailSaveError": "Erro ao salvar as configurações de e-mail.",
+      "saveButton": "Salvar Configurações"
   },
   "jobs": {
-    "youtrackTitle": "Job do YouTrack",
-    "youtrackDescription": "Force a sincronização e execução das tarefas do YouTrack.",
-    "youtrackButton": "Atualizar e Executar Job",
-    "emailTitle": "Configuração de E-mail",
-    "emailDescription": "Insira suas credenciais para sincronizar seus e-mails.",
-    "emailAddressPlaceholder": "Seu endereço de e-mail",
-    "emailCredentialsPlaceholder": "Sua senha ou chave de aplicativo",
-    "emailUpdateButton": "Atualizar Job de E-mail"
+    "youtrackTitle": "Sincronização do YouTrack",
+    "youtrackDescription": "Inicie manualmente a busca por novas tarefas e atualizações no YouTrack.",
+    "youtrackButton": "Executar Sincronização do YouTrack",
+    "youtrackJobSuccess": "Job de sincronização do YouTrack iniciado!",
+    "youtrackJobError": "Erro ao iniciar o job do YouTrack.",
+    "emailTitle": "Sincronização de E-mail",
+    "emailDescription": "Verifique e processe novos e-mails da sua conta configurada.",
+    "emailUpdateButton": "Verificar Novos E-mails",
+    "emailJobSuccess": "Job de sincronização de e-mail iniciado!",
+    "emailJobError": "Erro ao iniciar o job de e-mail."
   },
   "common": {
     "featureComingSoon": "Este recurso está em desenvolvimento e estará disponível em breve.",

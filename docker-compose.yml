@@ -1,52 +1,47 @@
+version: '3.8'
+
 services:
   backend:
-    build:
-      context: ./backend
+    build: ./backend
+    container_name: managerai-backend-1
+    env_file:
+      - ./.env
     ports:
       - "8000:8000"
-    volumes:
-      - ./backend/src:/app/src
-    env_file: .env # This tells compose to look for the .env file
     depends_on:
       db:
         condition: service_healthy
-    networks:
-      - managerai_net
+    volumes:
+      - ./backend/src:/app/src
+    restart: unless-stopped
 
   frontend:
-    build:
-      context: ./frontend
+    build: ./frontend
+    container_name: managerai-frontend-1
     ports:
       - "5173:5173"
     volumes:
       - ./frontend/src:/app/src
+      - /app/node_modules
     depends_on:
       - backend
-    networks:
-      - managerai_net
+    restart: unless-stopped
 
   db:
     image: mysql:8.0
-    restart: unless-stopped
-    environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    container_name: managerai-db-1
+    env_file:
+      - ./.env
     ports:
-      - "3306:3306"
-    volumes:
-      - mysql_data:/var/lib/mysql
-    networks:
-      - managerai_net
+      - "3307:3306"
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "${MYSQL_USER}", "-p${MYSQL_PASSWORD}"]
       interval: 10s
       timeout: 5s
       retries: 5
+    volumes:
+      - mysql_data:/var/lib/mysql
+    restart: unless-stopped
 
 volumes:
   mysql_data:
-
-networks:
-  managerai_net:

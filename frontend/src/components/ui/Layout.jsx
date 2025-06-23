@@ -1,19 +1,25 @@
+import React from 'react';
 import Sidebar from './Sidebar';
-import { Outlet } from 'react-router-dom';
-import SettingsModal from '../ui/SettingsModal'; // Importar o Modal
+import Header from './Header';
+import SettingsModal from '../ui/SettingsModal';
+import { useUI } from '../../context/UIContext';
 
-const Layout = () => {
+// The Layout now accepts a 'children' prop, which will be the
+// active page component rendered by the Router.
+export default function Layout({ children }) {
+  const { isSettingsModalOpen } = useUI();
+
   return (
-    <div className="relative flex min-h-screen bg-light-background dark:bg-dark-background">
+    <div className="flex h-screen bg-light-background dark:bg-dark-background">
       <Sidebar />
-      <main className="flex-1 p-4 sm:p-6 md:p-8">
-        <Outlet />
-      </main>
-      
-      {/* O Modal de configurações será renderizado aqui */}
-      <SettingsModal />
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <Header />
+        {/* The main content area where pages will be rendered */}
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+          {children}
+        </main>
+      </div>
+      {isSettingsModalOpen && <SettingsModal />}
     </div>
   );
-};
-
-export default Layout;
+}
