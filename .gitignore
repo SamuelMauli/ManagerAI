@@ -32,4 +32,4 @@ Thumbs.db
 .idea/
 
 # Relatórios de cobertura de testes
-/coverage
+/coveragebackend/.env
