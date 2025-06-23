@@ -1,7 +1,6 @@
-# src/app/models/email.py
-from sqlalchemy import Column, Integer, String, Text, DateTime, func
-from ..database import Base
+from sqlalchemy import Column, Integer, String, Text, DateTime
 from datetime import datetime
+from .base import Base
 
 class Email(Base):
     __tablename__ = "emails"
@@ -13,4 +12,4 @@ class Email(Base):
     body = Column(Text)
     received_at = Column(DateTime, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
-    processed_at = Column(DateTime, nullable=True) # Para saber quando a IA processou
+    processed_at = Column(DateTime, nullable=True)

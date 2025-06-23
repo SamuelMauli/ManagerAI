@@ -5,7 +5,7 @@ uvicorn[standard]
 # Banco de Dados e ORM
 sqlalchemy
 mysqlclient
-alembic # Para migrações de banco de dados
+alembic 
 
 # Validação de dados e configurações
 pydantic
@@ -21,3 +21,6 @@ groq
 # APIs do Google
 google-api-python-client
 google-auth-oauthlib
+
+# Criptografia
+cryptography
