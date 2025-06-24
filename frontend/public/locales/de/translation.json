@@ -6,54 +6,66 @@
     "dashboard": "Dashboard",
     "emails": "E-Mails",
     "tasks": "Aufgaben",
-    "chat": "Chat",
     "calendar": "Kalender",
+    "chat": "Chat",
     "settings": "Einstellungen",
     "collapse": "Einklappen",
     "expand": "Ausklappen"
   },
   "dashboard": {
-    "welcome": "Willkommen bei deinem persönlichen KI-Assistenten.",
+    "welcome": "Willkommen bei Ihrem persönlichen KI-Assistenten.",
     "unreadEmails": "Ungelesene E-Mails",
     "pendingTasks": "Ausstehende Aufgaben",
     "activeProjects": "Aktive Projekte",
-    "activityFeed": "Aktivitäts-Feed"
+    "activityFeed": "Aktivitätsfeed"
   },
   "emails": {
-    "subtitle": "Organisiere, suche und verwalte deine Posteingänge.",
+    "subtitle": "Organisieren, suchen und verwalten Sie Ihre Posteingänge.",
     "newButton": "Neue E-Mail"
   },
   "tasks": {
-    "subtitle": "Behalte den Überblick über deine anstehenden Aktivitäten und Projekte.",
+    "subtitle": "Verfolgen Sie Ihre anstehenden Aktivitäten und Projekte.",
     "newButton": "Neue Aufgabe"
   },
   "calendar": {
-    "subtitle": "Zeige und verwalte deine Ereignisse und Termine.",
-    "newButton": "Neues Ereignis"
+    "subtitle": "Sehen und verwalten Sie Ihre Termine und Verpflichtungen.",
+    "newButton": "Neuer Termin"
   },
   "chat": {
-    "subtitle": "Chatte direkt mit deiner persönlichen KI.",
-    "welcomeMessage": "Hallo! Wie kann ich dir heute helfen?",
-    "inputPlaceholder": "Gib deine Nachricht hier ein..."
+    "placeholder": "Geben Sie Ihre Nachricht hier ein...",
+    "title": "Intelligenter Assistent"
   },
   "settings": {
-    "description": "Hier kannst du Integrationen, Sprache und andere Einstellungen konfigurieren.",
-    "languageTitle": "Sprache",
-    "languageDescription": "Wähle deine bevorzugte Sprache.",
-    "languagePlaceholder": "Sprache auswählen"
+      "languageTitle": "Sprache",
+      "languagePlaceholder": "Sprache auswählen",
+      "closeModal": "Modal schließen",
+      "youtrackTitle": "YouTrack-Einstellungen",
+      "youtrackUrlPlaceholder": "YouTrack-Basis-URL (z. B. https://youtrack.example.com)",
+      "youtrackTokenPlaceholder": "Ihr permanenter YouTrack-Zugriffstoken",
+      "youtrackSaveSuccess": "YouTrack-Einstellungen erfolgreich gespeichert!",
+      "youtrackSaveError": "Fehler beim Speichern der YouTrack-Einstellungen.",
+      "emailTitle": "Gmail-Einstellungen",
+      "emailDescription": "Geben Sie Ihre E-Mail-Adresse und ein generiertes Gmail-App-Passwort an.",
+      "emailAddressPlaceholder": "E-Mail-Adresse",
+      "emailCredentialsPlaceholder": "Gmail-App-Passwort",
+      "emailSaveSuccess": "E-Mail-Einstellungen erfolgreich gespeichert!",
+      "emailSaveError": "Fehler beim Speichern der E-Mail-Einstellungen.",
+      "saveButton": "Einstellungen speichern"
   },
   "jobs": {
-    "youtrackTitle": "YouTrack-Job",
-    "youtrackDescription": "Synchronisierung und Ausführung von YouTrack-Aufgaben erzwingen.",
-    "youtrackButton": "Job aktualisieren und ausführen",
-    "emailTitle": "E-Mail-Konfiguration",
-    "emailDescription": "Gib deine Anmeldedaten ein, um deine E-Mails zu synchronisieren.",
-    "emailAddressPlaceholder": "Deine E-Mail-Adresse",
-    "emailCredentialsPlaceholder": "Dein Passwort oder App-Schlüssel",
-    "emailUpdateButton": "E-Mail-Job aktualisieren"
+    "youtrackTitle": "YouTrack-Synchronisation",
+    "youtrackDescription": "Starten Sie manuell die Suche nach neuen Aufgaben und Updates in YouTrack.",
+    "youtrackButton": "YouTrack-Synchronisation ausführen",
+    "youtrackJobSuccess": "YouTrack-Synchronisationsjob gestartet!",
+    "youtrackJobError": "Fehler beim Starten des YouTrack-Jobs.",
+    "emailTitle": "E-Mail-Synchronisation",
+    "emailDescription": "Prüfen und verarbeiten Sie neue E-Mails von Ihrem konfigurierten Konto.",
+    "emailUpdateButton": "Nach neuen E-Mails suchen",
+    "emailJobSuccess": "E-Mail-Synchronisationsjob gestartet!",
+    "emailJobError": "Fehler beim Starten des E-Mail-Jobs."
   },
   "common": {
     "featureComingSoon": "Diese Funktion befindet sich in der Entwicklung und wird bald verfügbar sein.",
-    "contentPlaceholder": "Der Inhalt für diesen Bereich wird hier angezeigt."
+    "contentPlaceholder": "Der Inhalt dieses Abschnitts wird hier angezeigt."
   }
 }

@@ -1,31 +1,41 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from .. import schemas, services
-from ..database import get_db
+from .. import schemas, models
+from ..dependencies import get_db, get_current_active_user
+from ..core.security import encrypt_data, decrypt_data
+from ..services import email_service # Adicionado para ter acesso ao serviço
 
 router = APIRouter(
     prefix="/api/settings",
     tags=["Settings"],
 )
 
-@router.post("/email", status_code=200)
-def update_email_settings(
-    config: schemas.setting.EmailConfig, 
-    db: Session = Depends(get_db)
+@router.post("/gmail", status_code=200)
+def save_gmail_settings(
+    settings_in: schemas.setting.GmailSettings, # Usando um schema apropriado
+    db: Session = Depends(get_db), 
+    current_user: models.User = Depends(get_current_active_user)
 ):
     """
-    Update email account configuration.
-    Stores the email and encrypted credentials.
+    Salva ou atualiza as configurações de e-mail (Gmail) para o usuário.
     """
     try:
-        return services.email_service.update_email_config(db, config)
+        # Aqui você implementaria a lógica para salvar as configs no banco de dados
+        # Por exemplo, usando uma tabela 'settings'
+        print(f"Salvando configuração para o e-mail: {settings_in.email}")
+        email_service.update_email_config(db=db, user_id=current_user.id, config=settings_in)
+        return {"message": "Configurações do Gmail salvas com sucesso"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/email", response_model=dict)
-def get_email_settings(db: Session = Depends(get_db)):
+
+@router.get("/gmail", response_model=schemas.setting.GmailSettings)
+def get_gmail_settings(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_active_user)
+):
     """
-    Get the configured email address (credentials are not returned).
+    Obtém o endereço de e-mail configurado para o usuário (a senha nunca é retornada).
     """
-    config = services.email_service.get_email_config(db)
-    return {"email": config.get("email")}
+    config = email_service.get_email_config(db=db, user_id=current_user.id)
+    return config

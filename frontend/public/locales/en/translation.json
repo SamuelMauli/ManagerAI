@@ -6,8 +6,8 @@
     "dashboard": "Dashboard",
     "emails": "Emails",
     "tasks": "Tasks",
-    "chat": "Chat",
     "calendar": "Calendar",
+    "chat": "Chat",
     "settings": "Settings",
     "collapse": "Collapse",
     "expand": "Expand"
@@ -24,7 +24,7 @@
     "newButton": "New Email"
   },
   "tasks": {
-    "subtitle": "Keep track of your pending activities and projects.",
+    "subtitle": "Track your pending activities and projects.",
     "newButton": "New Task"
   },
   "calendar": {
@@ -32,28 +32,40 @@
     "newButton": "New Event"
   },
   "chat": {
-    "subtitle": "Chat directly with your personal AI.",
-    "welcomeMessage": "Hello! How can I help you today?",
-    "inputPlaceholder": "Type your message here..."
+    "placeholder": "Type your message here...",
+    "title": "Intelligent Assistant"
   },
   "settings": {
-    "description": "Here you can configure integrations, language, and other preferences.",
-    "languageTitle": "Language",
-    "languageDescription": "Select your preferred language.",
-    "languagePlaceholder": "Select a language"
+      "languageTitle": "Language",
+      "languagePlaceholder": "Select language",
+      "closeModal": "Close modal",
+      "youtrackTitle": "YouTrack Settings",
+      "youtrackUrlPlaceholder": "YouTrack Base URL (e.g., https://youtrack.example.com)",
+      "youtrackTokenPlaceholder": "Your YouTrack Permanent Access Token",
+      "youtrackSaveSuccess": "YouTrack settings saved successfully!",
+      "youtrackSaveError": "Error saving YouTrack settings.",
+      "emailTitle": "Gmail Settings",
+      "emailDescription": "Provide your email address and a generated Gmail App Password.",
+      "emailAddressPlaceholder": "Email Address",
+      "emailCredentialsPlaceholder": "Gmail App Password",
+      "emailSaveSuccess": "Email settings saved successfully!",
+      "emailSaveError": "Error saving email settings.",
+      "saveButton": "Save Settings"
   },
   "jobs": {
-    "youtrackTitle": "YouTrack Job",
-    "youtrackDescription": "Force the synchronization and execution of YouTrack tasks.",
-    "youtrackButton": "Update and Run Job",
-    "emailTitle": "Email Configuration",
-    "emailDescription": "Enter your credentials to sync your emails.",
-    "emailAddressPlaceholder": "Your email address",
-    "emailCredentialsPlaceholder": "Your password or app key",
-    "emailUpdateButton": "Update Email Job"
+    "youtrackTitle": "YouTrack Synchronization",
+    "youtrackDescription": "Manually start searching for new tasks and updates in YouTrack.",
+    "youtrackButton": "Run YouTrack Sync",
+    "youtrackJobSuccess": "YouTrack sync job started!",
+    "youtrackJobError": "Error starting YouTrack job.",
+    "emailTitle": "Email Synchronization",
+    "emailDescription": "Check and process new emails from your configured account.",
+    "emailUpdateButton": "Check for New Emails",
+    "emailJobSuccess": "Email sync job started!",
+    "emailJobError": "Error starting email job."
   },
   "common": {
     "featureComingSoon": "This feature is under development and will be available soon.",
-    "contentPlaceholder": "The content for this section will be displayed here."
+    "contentPlaceholder": "The content of this section will be displayed here."
   }
 }

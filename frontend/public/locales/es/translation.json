@@ -6,8 +6,8 @@
     "dashboard": "Panel",
     "emails": "Correos",
     "tasks": "Tareas",
-    "chat": "Chat",
     "calendar": "Calendario",
+    "chat": "Chat",
     "settings": "Configuración",
     "collapse": "Contraer",
     "expand": "Expandir"
@@ -28,29 +28,41 @@
     "newButton": "Nueva Tarea"
   },
   "calendar": {
-    "subtitle": "Consulta y gestiona tus eventos y citas.",
+    "subtitle": "Ve y gestiona tus eventos y citas.",
     "newButton": "Nuevo Evento"
   },
   "chat": {
-    "subtitle": "Chatea directamente con tu IA personal.",
-    "welcomeMessage": "¡Hola! ¿Cómo puedo ayudarte hoy?",
-    "inputPlaceholder": "Escribe tu mensaje aquí..."
+    "placeholder": "Escribe tu mensaje aquí...",
+    "title": "Asistente Inteligente"
   },
   "settings": {
-    "description": "Aquí puedes configurar integraciones, idioma y otras preferencias.",
-    "languageTitle": "Idioma",
-    "languageDescription": "Selecciona tu idioma preferido.",
-    "languagePlaceholder": "Selecciona un idioma"
+      "languageTitle": "Idioma",
+      "languagePlaceholder": "Selecciona el idioma",
+      "closeModal": "Cerrar modal",
+      "youtrackTitle": "Configuración de YouTrack",
+      "youtrackUrlPlaceholder": "URL Base de YouTrack (ej: https://youtrack.example.com)",
+      "youtrackTokenPlaceholder": "Tu Token de Acceso Permanente de YouTrack",
+      "youtrackSaveSuccess": "¡Configuración de YouTrack guardada con éxito!",
+      "youtrackSaveError": "Error al guardar la configuración de YouTrack.",
+      "emailTitle": "Configuración de Gmail",
+      "emailDescription": "Proporciona tu dirección de correo electrónico y una contraseña de aplicación generada para Gmail.",
+      "emailAddressPlaceholder": "Dirección de Correo Electrónico",
+      "emailCredentialsPlaceholder": "Contraseña de Aplicación de Gmail",
+      "emailSaveSuccess": "¡Configuración de correo electrónico guardada con éxito!",
+      "emailSaveError": "Error al guardar la configuración de correo electrónico.",
+      "saveButton": "Guardar Configuración"
   },
   "jobs": {
-    "youtrackTitle": "Job de YouTrack",
-    "youtrackDescription": "Forzar la sincronización y ejecución de las tareas de YouTrack.",
-    "youtrackButton": "Actualizar y Ejecutar Job",
-    "emailTitle": "Configuración de Correo",
-    "emailDescription": "Introduce tus credenciales para sincronizar tus correos.",
-    "emailAddressPlaceholder": "Tu dirección de correo",
-    "emailCredentialsPlaceholder": "Tu contraseña o clave de aplicación",
-    "emailUpdateButton": "Actualizar Job de Correo"
+    "youtrackTitle": "Sincronización de YouTrack",
+    "youtrackDescription": "Inicia manualmente la búsqueda de nuevas tareas y actualizaciones en YouTrack.",
+    "youtrackButton": "Ejecutar Sincronización de YouTrack",
+    "youtrackJobSuccess": "¡Tarea de sincronización de YouTrack iniciada!",
+    "youtrackJobError": "Error al iniciar la tarea de YouTrack.",
+    "emailTitle": "Sincronización de Correo",
+    "emailDescription": "Verifica y procesa nuevos correos de tu cuenta configurada.",
+    "emailUpdateButton": "Verificar Nuevos Correos",
+    "emailJobSuccess": "¡Tarea de sincronización de correo iniciada!",
+    "emailJobError": "Error al iniciar la tarea de correo."
   },
   "common": {
     "featureComingSoon": "Esta función está en desarrollo y estará disponible pronto.",

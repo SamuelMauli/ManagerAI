@@ -1,33 +1,24 @@
+from typing import Optional
+from pydantic import EmailStr
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
-    PROJECT_NAME: str = "ManagerAI Backend"
-    
-    # Superuser credentials for initial setup
-    FIRST_SUPERUSER_EMAIL: str
-    FIRST_SUPERUSER_PASSWORD: str
-    FIRST_SUPERUSER_FULL_NAME: str = "Admin"
-
-    # Database
-    DATABASE_URL: str
-    
-    # APIs
-    GROQ_API_KEY: str
-    YOUTRACK_API_TOKEN: str
-    YOUTRACK_BASE_URL: str
-    
-    # Google OAuth
-    GOOGLE_CLIENT_ID: str
-    GOOGLE_CLIENT_SECRET: str
-    
-    # JWT Authentication
+    PROJECT_NAME: str = "ManagerAI"
+    API_V1_STR: str = "/api"
     SECRET_KEY: str
-    ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7 # 7 days
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8 
+    DATABASE_URL: str
+    FIRST_SUPERUSER_EMAIL: EmailStr
+    FIRST_SUPERUSER_PASSWORD: str
+    GROQ_API_KEY: str
+
+    # Credenciais do YouTrack carregadas do ambiente
+    YOUTRACK_BASE_URL: str
+    YOUTRACK_API_TOKEN: str
 
     class Config:
-        # This tells pydantic to load variables from a .env file
-        env_file = ".env"
-        env_file_encoding = 'utf-8'
+        case_sensitive = True
+        env_file = ".env"  # Mesmo que não usemos, é boa prática manter
+        env_file_encoding = "utf-8"
 
 settings = Settings()
