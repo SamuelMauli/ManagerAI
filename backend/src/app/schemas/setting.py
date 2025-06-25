@@ -1,20 +1,19 @@
-from pydantic import BaseModel, EmailStr
-from typing import Optional
+from pydantic import BaseModel
+from typing import Any
 
 class SettingBase(BaseModel):
     key: str
-    value: Optional[str] = None
+    value: Any
 
 class SettingCreate(SettingBase):
     pass
 
+class SettingUpdate(SettingBase):
+    pass
+
 class Setting(SettingBase):
     id: int
+    owner_id: int
 
     class Config:
-        orm_mode = True
-
-# Schema for receiving email configuration from the frontend
-class EmailConfig(BaseModel):
-    email: EmailStr
-    credentials: str # This will be the app password or key
+        from_attributes = True

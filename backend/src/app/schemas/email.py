@@ -1,25 +1,29 @@
 from pydantic import BaseModel
-from datetime import datetime
 from typing import Optional
-from sqlalchemy.orm import Session
-from fastapi import APIRouter, Depends
-
-from .. import crud, models, schemas
-from ..core.security import get_current_active_user
-from ..database import get_db
+from datetime import datetime
 
 class EmailBase(BaseModel):
     subject: Optional[str] = None
     sender: Optional[str] = None
+    body: Optional[str] = None
     summary: Optional[str] = None
+    received_at: Optional[datetime] = None
 
-class EmailSummary(EmailBase):
-    id: int
+class EmailCreate(EmailBase):
+    pass
 
 class Email(EmailBase):
     id: int
-    body: Optional[str] = None
-    received_at: datetime
+    owner_id: int
+
+    class Config:
+        from_attributes = True
+
+class EmailSummary(BaseModel):
+    id: int
+    subject: Optional[str] = None
+    sender: Optional[str] = None
+    summary: Optional[str] = None
 
     class Config:
         from_attributes = True
