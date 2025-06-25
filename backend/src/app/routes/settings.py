@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from .. import schemas, models
-from ..dependencies import get_db, get_current_active_user
 from ..core.security import encrypt_data, decrypt_data
-from ..services import email_service # Adicionado para ter acesso ao serviço
+from ..services import email_service
+from ..database import get_db
+from ..core.security import get_current_active_user
 
 router = APIRouter(
     prefix="/api/settings",

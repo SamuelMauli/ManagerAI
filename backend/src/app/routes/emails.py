@@ -4,6 +4,7 @@ from typing import List
 from ..models.email import Email
 from ..schemas.email import Email as EmailSchema
 from ..database import get_db
+from ..core.security import get_current_active_user
 
 router = APIRouter(
     prefix="/api/emails",

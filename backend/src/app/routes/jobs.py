@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, BackgroundTasks
 from sqlalchemy.orm import Session
 from ..services import email_service, youtrack_service
-from ..dependencies import get_db # Import get_db a partir dos dependencies
-from ..models.user import User # Import do model de User
-from ..dependencies import get_current_active_user # Import para pegar o usuário logado
+from ..models.user import User 
+from ..database import get_db
+from ..core.security import get_current_active_user
 
 router = APIRouter(
     prefix="/api/jobs",

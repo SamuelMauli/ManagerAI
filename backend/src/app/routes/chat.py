@@ -1,8 +1,12 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-
 from .. import schemas, models, services
-from ..dependencies import get_db, get_current_active_user
+from sqlalchemy.orm import Session
+from fastapi import APIRouter, Depends
+
+from .. import crud, models, schemas
+from ..core.security import get_current_active_user
+from ..database import get_db
 
 router = APIRouter()
 

@@ -1,6 +1,9 @@
 from pydantic import BaseModel
 
 class DashboardStats(BaseModel):
-    unread_emails: int
     pending_tasks: int
-    active_projects: int
+    new_emails: int
+    total_users: int
+
+    class Config:
+        from_attributes = True

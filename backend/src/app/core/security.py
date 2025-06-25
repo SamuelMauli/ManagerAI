@@ -1,48 +1,54 @@
-from cryptography.fernet import Fernet
-from datetime import datetime, timedelta
-from typing import Optional
-from passlib.context import CryptContext
-from jose import JWTError, jwt
-from .config import settings
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
+from jose import jwt, JWTError
+from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session
+from fastapi import APIRouter, Depends
 
-# --- Encryption for sensitive data like API keys or passwords ---
+from sqlalchemy.orm import Session
+from .. import models, schemas
+from ..crud import crud_user
+from ..database import get_db
 
-import base64
-from hashlib import sha256
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/login/access-token")
 
-# Derive a 32-byte key from the main secret key for Fernet
-key = base64.urlsafe_b64encode(sha256(settings.SECRET_KEY.encode()).digest())
-fernet = Fernet(key)
+async def get_current_user(
+    db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)
+) -> models.User:
+    """
+    Decodifica o token JWT para obter o usuário atual.
+    """
 
-def encrypt_data(data: str) -> bytes:
-    """Encrypts a string."""
-    return fernet.encrypt(data.encode())
+    user = crud_user.get_by_email(db, email=username)
 
-def decrypt_data(encrypted_data: bytes) -> str:
-    """Decrypts a string."""
-    return fernet.decrypt(encrypted_data).decode()
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(
+            token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
+        )
+        username: str = payload.get("sub")
+        if username is None:
+            raise credentials_exception
+        
+    except JWTError:
+        raise credentials_exception
+    
+    user = crud.user.get_by_email(db, email=username)
+    
+    if user is None:
+        raise credentials_exception
+    return user
 
-
-# --- Password Hashing for Users ---
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verifies a plain password against a hashed one."""
-    return pwd_context.verify(plain_password, hashed_password)
-
-def get_password_hash(password: str) -> str:
-    """Hashes a plain password."""
-    return pwd_context.hash(password)
-
-
-# --- JWT Access Tokens ---
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
-    """Creates a JWT access token."""
-    to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.utcnow() + expires_delta
-    else:
-        expire = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
-    return encoded_jwt
+async def get_current_active_user(
+    current_user: models.User = Depends(get_current_user),
+) -> models.User:
+    """
+    Verifica se o usuário atual está ativo.
+    """
+    if not current_user.is_active:
+        raise HTTPException(status_code=400, detail="Inactive user")
+    return current_user
