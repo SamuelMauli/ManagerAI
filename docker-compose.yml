@@ -1,64 +1,48 @@
-version: '3.8'
-
 services:
   db:
     image: mysql:8.0
     container_name: managerai-db-1
     restart: always
     environment:
-      MYSQL_DATABASE: 'app'
-      MYSQL_USER: 'user'
-      MYSQL_PASSWORD: 'password'
-      MYSQL_ROOT_PASSWORD: 'root_password'
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     ports:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
       timeout: 20s
       retries: 10
 
   backend:
-    build: ./backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
     container_name: managerai-backend-1
     restart: always
+    env_file:
+      - ./.env
     ports:
       - "8000:8000"
-    volumes:
-      - ./backend/src:/app/src
-      # Volume para persistir o token do Google
-      - backend_token_storage:/app/src/app/services 
     depends_on:
       db:
         condition: service_healthy
-    # A MUDANÇA MAIS IMPORTANTE ESTÁ AQUI:
-    environment:
-      # --- Segurança ---
-      - SECRET_KEY=c2a3e0b1d5f8e7c6b5a4d3c2b1a0f9e8d7c6b5a4d3c2b1a0f9e8d7c6b5a4d3c2
-      # --- Superusuário ---
-      - FIRST_SUPERUSER_EMAIL=samuel.mauli@meisters.solutions
-      - FIRST_SUPERUSER_PASSWORD=Meu.giuseppe0701
-      # --- Banco de Dados ---
-      - DATABASE_URL=mysql+pymysql://user:password@db/app
-      # --- APIs Externas ---
-      - GROQ_API_KEY=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
-      # --- YOUTRACK (Credenciais fixas, como solicitado) ---
-      - YOUTRACK_BASE_URL=https://digiudigital.youtrack.cloud/
-      - YOUTRACK_API_TOKEN=perm:aXVyeS5ub2d1ZWlyYQ==.NTMtMQ==.0UF7PTiJFcfRZSBhu2XPrfHwuJxvFw
+    volumes:
+      - ./backend/src:/app/src
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
     container_name: managerai-frontend-1
     restart: always
     ports:
       - "5173:5173"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
     depends_on:
       - backend
 
 volumes:
   mysql_data:
-  backend_token_storage:

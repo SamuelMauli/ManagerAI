@@ -1,6 +1,9 @@
-from pydantic import BaseModel
-from typing import Any
+from pydantic import BaseModel, EmailStr
+from typing import Any, Optional
 
+class GmailSettings(BaseModel):
+    email: Optional[EmailStr] = None
+    password: Optional[str] = None 
 class SettingBase(BaseModel):
     key: str
     value: Any

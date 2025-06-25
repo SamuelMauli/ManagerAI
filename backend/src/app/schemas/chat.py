@@ -1,7 +1,9 @@
 from pydantic import BaseModel
-import datetime
+from typing import Optional
+from datetime import datetime
 
 class ChatMessageBase(BaseModel):
+    sender: str
     message: str
 
 class ChatMessageCreate(ChatMessageBase):
@@ -9,8 +11,8 @@ class ChatMessageCreate(ChatMessageBase):
 
 class ChatMessage(ChatMessageBase):
     id: int
-    sender: str
-    timestamp: datetime
-    
+    owner_id: int
+    created_at: datetime
+
     class Config:
         from_attributes = True

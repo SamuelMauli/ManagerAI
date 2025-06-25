@@ -1,30 +1,52 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 
-from .. import schemas, models, services
-from ..dependencies import get_db 
+from .. import crud, models, schemas
+from ..core.security import get_current_active_user
+from ..database import get_db
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/api",
+    tags=["Tasks"]
+)
 
-@router.post("/tasks/", response_model=schemas.task.Task)
-def create_task(
-    task: schemas.task.TaskCreate, 
-    db: Session = Depends(get_db)
+@router.get("/projects", response_model=List[schemas.project.Project])
+def get_projects(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_active_user)
 ):
-    """
-    Create a new task in YouTrack and saves it to the local database.
-    """
-    return services.task_service.create_task(db=db, task_in=task) 
+    """ Busca todos os projetos do usuário logado. """
+    return crud.project.get_projects_by_owner(db, owner_id=current_user.id)
 
-
-@router.get("/tasks/", response_model=List[schemas.task.Task])
-def read_tasks(
-    db: Session = Depends(get_db), 
-    skip: int = 0, 
-    limit: int = 100
+@router.get("/tasks", response_model=List[schemas.task.Task])
+def get_tasks_with_filters(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_active_user),
+    project_id: Optional[int] = Query(None),
+    status: Optional[str] = Query(None),
+    assignee: Optional[str] = Query(None)
 ):
-    """
-    Retrieve tasks.
-    """
-    return services.task_service.get_tasks(db=db, skip=skip, limit=limit)
+    """ Busca tarefas com base nos filtros fornecidos. """
+    filters = {
+        "project_id": project_id,
+        "status": status,
+        "assignee": assignee
+    }
+    return crud.task.get_tasks_with_filters(db, owner_id=current_user.id, filters=filters)
+    
+@router.get("/tasks/statuses", response_model=List[str])
+def get_task_statuses(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_active_user)
+):
+    """ Retorna uma lista de todos os status de tarefas distintos. """
+    return crud.task.get_distinct_statuses(db, owner_id=current_user.id)
+
+@router.get("/tasks/assignees", response_model=List[str])
+def get_task_assignees(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_active_user)
+):
+    """ Retorna uma lista de todos os responsáveis (assignees) distintos. """
+    return crud.task.get_distinct_assignees(db, owner_id=current_user.id)
