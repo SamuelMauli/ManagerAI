@@ -6,20 +6,13 @@ const Header = () => {
   const { toggleMobileMenu } = useUI();
 
   return (
-    <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-white/10 bg-light-card/80 px-4 shadow-sm backdrop-blur-xl dark:bg-dark-card/80 md:justify-end md:px-8">
-      {/* Botão do menu mobile (só aparece em telas pequenas) */}
-      <button
-        onClick={toggleMobileMenu}
-        className="p-2 text-light-text-secondary dark:text-dark-text-secondary md:hidden"
-        aria-label="Abrir menu"
-      >
+    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-light-border/80 bg-light-background/80 px-4 shadow-sm backdrop-blur-xl dark:border-dark-border/80 dark:bg-dark-background/80 md:justify-end md:px-8">
+      <button onClick={toggleMobileMenu} className="p-2 text-light-text-secondary dark:text-dark-text-secondary md:hidden" aria-label="Abrir menu">
         <Menu size={24} />
       </button>
-
-      {/* Itens do Header (ex: busca, perfil, etc.) podem ir aqui */}
       <div className="flex items-center gap-4">
         <ThemeSwitcher />
-        {/* Futuramente: <UserMenu /> */}
+        {/* Futuramente aqui: <UserMenu /> */}
       </div>
     </header>
   );

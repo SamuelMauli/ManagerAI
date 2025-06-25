@@ -1,70 +1,64 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PlusCircle, Filter } from 'lucide-react';
-import api from '../api/api'; // Supondo que você tenha um cliente de API configurado
+import { getTasks, getFilterData } from '../services/api';
+import toast from 'react-hot-toast';
 
 const Tasks = () => {
   const { t } = useTranslation();
 
-  // Estados para dados e filtros
   const [tasks, setTasks] = useState([]);
   const [projects, setProjects] = useState([]);
   const [statuses, setStatuses] = useState([]);
   const [assignees, setAssignees] = useState([]);
   
-  // Estados de controle da UI
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
   
-  // Estados dos filtros selecionados
   const [selectedProject, setSelectedProject] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('');
   const [selectedAssignee, setSelectedAssignee] = useState('');
 
-  // Efeito para buscar dados iniciais (projetos, status, etc.)
   useEffect(() => {
-    const fetchFilterData = async () => {
+    const fetchInitialData = async () => {
       try {
-        const [projRes, statRes, assignRes] = await Promise.all([
-          api.get('/projects'),
-          api.get('/tasks/statuses'),
-          api.get('/tasks/assignees'),
-        ]);
+        const [projRes, assignRes, statRes] = await getFilterData();
         setProjects(projRes.data);
-        setStatuses(statRes.data);
         setAssignees(assignRes.data);
+        setStatuses(statRes.data);
       } catch (error) {
         console.error("Failed to fetch filter data", error);
+        toast.error(t('tasks.errors.loadFilters'));
       }
     };
-    fetchFilterData();
-  }, []);
+    fetchInitialData();
+  }, [t]);
 
-  // Efeito para buscar tarefas sempre que um filtro mudar
   useEffect(() => {
     const fetchTasks = async () => {
       setLoading(true);
+      const filters = {
+        project_id: selectedProject,
+        status: selectedStatus,
+        assignee: selectedAssignee,
+      };
+      
       try {
-        const params = new URLSearchParams();
-        if (selectedProject) params.append('project_id', selectedProject);
-        if (selectedStatus) params.append('status', selectedStatus);
-        if (selectedAssignee) params.append('assignee', selectedAssignee);
-        
-        const response = await api.get(`/tasks?${params.toString()}`);
+        const response = await getTasks(filters);
         setTasks(response.data);
       } catch (error) {
         console.error("Failed to fetch tasks", error);
-        setTasks([]); // Limpa as tarefas em caso de erro
+        setTasks([]);
+        toast.error(t('tasks.errors.loadTasks'));
       } finally {
         setLoading(false);
       }
     };
     fetchTasks();
-  }, [selectedProject, selectedStatus, selectedAssignee]);
+  }, [selectedProject, selectedStatus, selectedAssignee, t]);
 
   return (
     <div className="space-y-6">
-      {/* Cabeçalho da Página */}
       <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <div>
           <h1 className="text-4xl font-extrabold tracking-tight text-dark-text">
@@ -89,10 +83,8 @@ const Tasks = () => {
         </div>
       </div>
 
-      {/* Seção de Filtros (condicional) */}
       {showFilters && (
         <div className="grid grid-cols-1 gap-4 rounded-xl border border-white/10 bg-dark-card/60 p-4 sm:grid-cols-2 md:grid-cols-3">
-          {/* Filtro de Projeto */}
           <div>
             <label className="text-sm font-medium text-dark-text-secondary">{t('tasks.project')}</label>
             <select
@@ -104,7 +96,6 @@ const Tasks = () => {
               {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
           </div>
-          {/* Filtro de Status */}
           <div>
              <label className="text-sm font-medium text-dark-text-secondary">{t('tasks.status')}</label>
              <select
@@ -116,7 +107,6 @@ const Tasks = () => {
               {statuses.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
           </div>
-          {/* Filtro de Responsável */}
           <div>
              <label className="text-sm font-medium text-dark-text-secondary">{t('tasks.assignee')}</label>
              <select
@@ -131,7 +121,6 @@ const Tasks = () => {
         </div>
       )}
       
-      {/* Conteúdo Principal (Lista de Tarefas) */}
       <div className="min-h-[50vh] rounded-2xl border border-white/10 bg-dark-card/60 p-6 shadow-lg backdrop-blur-lg">
         {loading ? (
           <div className="flex h-full items-center justify-center text-dark-text-secondary">

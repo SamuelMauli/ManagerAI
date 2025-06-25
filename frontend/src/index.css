@@ -5,8 +5,10 @@
 @tailwind utilities;
 
 @layer base {
-  body {
-    @apply bg-light-background dark:bg-dark-background text-light-text dark:text-dark-text font-sans antialiased;
-    @apply transition-colors duration-300;
+  html, body {
+    @apply bg-light-background dark:bg-dark-background;
+    @apply text-light-text dark:text-dark-text;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }

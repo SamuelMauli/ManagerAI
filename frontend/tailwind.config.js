@@ -6,7 +6,7 @@ export default {
     extend: {
       colors: {
         dark: {
-          background: '#0D0C12', 
+          background: '#111827', 
           primary: '#1A1920',    
           card: 'rgba(26, 25, 32, 0.7)',
           text: '#F0F2F5',
@@ -34,3 +34,22 @@ export default {
   },
   plugins: [],
 };
+        // light: {
+        //   background: '#f0f2f5', 
+        //   primary: '#ffffff',   
+        //   card: '#ffffff',
+        //   text: '#1a202c',    
+        //   'text-secondary': '#718096', 
+        //   accent: '#3b82f6',    
+        //   'accent-hover': '#2563eb', 
+        //   border: '#e2e8f0',    
+        // },
+        // dark: {
+        //   background: '#111827', 
+        //   primary: '#1f2937',   
+        //   card: '#1f2937',      
+        //   text: '#f9fafb',     
+        //   'text-secondary': '#9ca3af',
+        //   accent: '#3b82f6',     
+        //   'accent-hover': '#60a5fa',
+        //   border: '#374151',     
