@@ -18,7 +18,7 @@ const LoginCallback = () => {
 
     const exchangeCodeForToken = async () => {
       try {
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+        const apiBaseUrl = import.meta.env.VITE_API_URL;
         const response = await fetch(`${apiBaseUrl}/auth/google/callback`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -53,4 +53,4 @@ const LoginCallback = () => {
   );
 };
 
-export default LoginCallback;
+export default LoginCallback

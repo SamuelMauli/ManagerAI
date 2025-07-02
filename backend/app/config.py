@@ -7,6 +7,12 @@ class Settings(BaseSettings):
     # Credenciais do Google
     GOOGLE_CLIENT_ID: str
     GOOGLE_CLIENT_SECRET: str
+    GOOGLE_SCOPES: str = (
+        'openid,https://www.googleapis.com/auth/userinfo.email,'
+        'https://www.googleapis.com/auth/userinfo.profile,'
+        'https://www.googleapis.com/auth/gmail.readonly,'
+        'https://www.googleapis.com/auth/calendar.readonly'
+    )
     
     # Chave para JWT
     SECRET_KEY: str
@@ -15,3 +21,4 @@ class Settings(BaseSettings):
 
 # Instância única que será usada em toda a aplicação
 settings = Settings()
+

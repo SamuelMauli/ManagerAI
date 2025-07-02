@@ -14,13 +14,7 @@ import re
 from typing import Optional, Tuple, Dict # Adicione Optional, Tuple, Dict aqui
 
 
-SCOPES = [
-    'openid',
-    'https://www.googleapis.com/auth/userinfo.email',
-    'https://www.googleapis.com/auth/userinfo.profile',
-    'https://www.googleapis.com/auth/gmail.readonly',
-    'https://www.googleapis.com/auth/calendar.readonly',
-]
+SCOPES = settings.GOOGLE_SCOPES.split(',')
 
 def exchange_code_for_credentials(code: str) -> Optional[Tuple[Dict, Credentials]]:
     try:
