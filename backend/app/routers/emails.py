@@ -4,7 +4,11 @@ from typing import List
 
 from .. import crud, schemas, models
 from ..dependencies import get_db, get_current_user
-from ..services import google as google_service # Renomear para evitar conflito com googleapiclient
+from ..services import google as google_service 
+from .. import crud, models, schemas
+from ..database import get_db
+from ..dependencies import get_current_user
+
 
 router = APIRouter(
     prefix="/emails",
@@ -12,6 +16,21 @@ router = APIRouter(
     dependencies=[Depends(get_current_user)],
     responses={404: {"description": "Not found"}},
 )
+
+@router.get("/unread", response_model=List[schemas.Email])
+def get_unread_emails(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    """
+    Retorna uma lista de e-mails não lidos para o usuário autenticado.
+    """
+    unread_emails = db.query(models.Email).filter(
+        models.Email.user_id == current_user.id,
+        models.Email.is_read == False
+    ).order_by(models.Email.received_at.desc()).limit(10).all()
+    
+    return unread_emails
 
 @router.post("/sync", status_code=status.HTTP_202_ACCEPTED)
 async def sync_emails_endpoint(background_tasks: BackgroundTasks, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):

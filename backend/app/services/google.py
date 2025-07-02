@@ -173,3 +173,51 @@ def sync_google_emails(db: Session, user_id: int):
         print(f"Ocorreu um erro na API do Gmail: {error}")
     except Exception as e:
         print(f"Ocorreu um erro inesperado ao sincronizar e-mails: {e}")
+
+def get_events_for_today(db: Session, user: models.User) -> List[Dict]:
+    """
+    Busca os eventos do Google Calendar para o usuário no dia de hoje.
+    """
+    if not refresh_access_token_if_needed(db, user):
+        print(f"Não foi possível buscar eventos para o usuário {user.id} devido a problema com o token.")
+        return []
+
+    credentials = Credentials(
+        token=user.access_token,
+        refresh_token=user.refresh_token,
+        token_uri="https://oauth2.googleapis.com/token",
+        client_id=settings.GOOGLE_CLIENT_ID,
+        client_secret=settings.GOOGLE_CLIENT_SECRET,
+        scopes=SCOPES
+    )
+    
+    service = build('calendar', 'v3', credentials=credentials)
+    
+    # Define o intervalo de tempo para o dia de hoje
+    now = datetime.datetime.utcnow()
+    time_min = now.replace(hour=0, minute=0, second=0, microsecond=0).isoformat() + 'Z'
+    time_max = now.replace(hour=23, minute=59, second=59, microsecond=999999).isoformat() + 'Z'
+    
+    events_result = service.events().list(
+        calendarId='primary', 
+        timeMin=time_min,
+        timeMax=time_max,
+        maxResults=10, 
+        singleEvents=True,
+        orderBy='startTime'
+    ).execute()
+    
+    events = events_result.get('items', [])
+    
+    formatted_events = []
+    for event in events:
+        start = event['start'].get('dateTime', event['start'].get('date'))
+        end = event['end'].get('dateTime', event['end'].get('date'))
+        formatted_events.append({
+            "id": event['id'],
+            "summary": event['summary'],
+            "start_time": start,
+            "end_time": end,
+        })
+        
+    return formatted_events

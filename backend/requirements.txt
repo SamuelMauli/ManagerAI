@@ -13,3 +13,4 @@ google-auth-oauthlib
 google-generativeai
 httpx
 itsdangerous
+email-validator 
