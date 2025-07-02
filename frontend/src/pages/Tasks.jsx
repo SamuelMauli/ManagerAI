@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PlusCircle, Filter } from 'lucide-react';
-import { getTasks, getFilterData } from '../services/api';
+import api from '../services/api';
 import toast from 'react-hot-toast';
 
 const Tasks = () => {

@@ -1,20 +1,17 @@
-# Use uma imagem oficial do Python como imagem pai
-FROM python:3.9-slim
+# backend/Dockerfile
 
-# Define variáveis de ambiente para otimizar o Python no Docker
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
+FROM python:3.11-slim
 
-# Define o diretório de trabalho dentro do contêiner
 WORKDIR /app
 
-# Copia e instala as dependências primeiro para aproveitar o cache do Docker
-COPY ./requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Instalar dependências
+COPY requirements.txt .
+RUN pip install --no-cache-dir --upgrade -r requirements.txt
 
-# Copia todo o código da pasta backend para o diretório /app do contêiner
-COPY . .
+COPY ./app /app/app
 
-# Define o comando para executar a aplicação
-# A flag --app-dir diz ao Uvicorn para adicionar o diretório 'src' ao caminho do Python
-CMD ["uvicorn", "app.main:app", "--app-dir", "src", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+# Define o PYTHONPATH para que os módulos sejam encontrados
+ENV PYTHONPATH=/app
+
+# Comando corrigido para encontrar o app a partir da subpasta 'app'
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

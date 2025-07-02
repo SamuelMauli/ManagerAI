@@ -1,34 +1,42 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
+import { UIProvider } from './context/UIContext';
 import Layout from './components/layout/Layout';
 import Dashboard from './pages/Dashboard';
 import Chat from './pages/Chat';
-import Emails from './pages/Emails';
-import Tasks from './pages/Tasks';
-import Calendar from './pages/Calendar';
-import { UIProvider } from './context/UIContext';
 import CalendarPage from './pages/CalendarPage';
 import ReportsPage from './pages/ReportsPage';
+import SettingsModal from './components/ui/SettingsModal';
+import Login from './pages/Login';
+import Tasks from './pages/Tasks';
+import Emails from './pages/Emails';
+
+// Um componente simples para proteger rotas
+const PrivateRoute = ({ children }) => {
+  const token = localStorage.getItem('token');
+  return token ? children : <Navigate to="/login" />;
+};
 
 function App() {
   return (
-    <Router>
-      <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-        <div className="flex h-screen bg-background text-foreground">
-          {isAuthenticated && <Sidebar />}
-          <main className="flex-1 overflow-y-auto">
-            {isAuthenticated && <Header />}
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route path="/" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
-              <Route path="/chat" element={<PrivateRoute><Chat /></PrivateRoute>} />
-              <Route path="/calendar" element={<PrivateRoute><CalendarPage /></PrivateRoute>} />
-              <Route path="/reports" element={<PrivateRoute><ReportsPage /></PrivateRoute>} />
-              <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
-            </Routes>
-          </main>
-        </div>
-      </ThemeProvider>
-    </Router>
+    <UIProvider>
+      <Router>
+        <Toaster position="top-center" reverseOrder={false} />
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/" element={<PrivateRoute><Layout /></PrivateRoute>}>
+            <Route index element={<Navigate to="/dashboard" replace />} />
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="chat" element={<Chat />} />
+            <Route path="tasks" element={<Tasks />} />
+            <Route path="emails" element={<Emails />} />
+            <Route path="calendar" element={<CalendarPage />} />
+            <Route path="reports" element={<ReportsPage />} />
+          </Route>
+        </Routes>
+        <SettingsModal />
+      </Router>
+    </UIProvider>
   );
 }
 

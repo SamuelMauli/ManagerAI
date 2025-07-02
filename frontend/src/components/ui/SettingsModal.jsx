@@ -3,14 +3,7 @@ import { Fragment, useState, useEffect } from 'react';
 import { useUI } from '../../context/UIContext';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import {
-  getYouTrackSettings,
-  saveYouTrackSettings,
-  runYouTrackJob,
-  getEmailSettings,
-  saveEmailSettings,
-  runEmailJob,
-} from '../../services/api';
+import api from '../../services/api';
 import { X, Languages, Check, RefreshCw, Save, LoaderCircle } from 'lucide-react';
 
 const supportedLanguages = [

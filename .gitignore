@@ -19,7 +19,6 @@ pnpm-debug.log*
 .vite/
 .next/
 .vercel/
-frontend/package.json
 frontend/package-lock.json
 
 # Ambiente virtual Python

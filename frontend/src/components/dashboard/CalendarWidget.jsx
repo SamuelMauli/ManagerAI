@@ -21,7 +21,7 @@ const CalendarWidget = () => {
             
             // Placeholder até a rota existir
             setEvents([]);
-            alert("Sincronização do calendário iniciada. A busca de eventos ainda precisa ser implementada no backend (GET /api/v1/calendar/events).");
+            alert("Sincronização do calendário iniciada. A busca de eventos ainda precisa ser implementada no backend (GET /api/calendar/events).");
 
         } catch (error) {
             console.error("Failed to fetch events", error);

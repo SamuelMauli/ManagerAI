@@ -2,7 +2,8 @@ import React, { useEffect } from 'react';
 import { useGoogleLogin } from '@react-oauth/google';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import api from '../api/api';
+import { motion } from 'framer-motion'; // Importação que faltava
+import api from '../services/api'; // Corrigido para o caminho do serviço correto
 import { Bot, LogIn } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -10,7 +11,6 @@ const Login = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  // Redireciona se o usuário já estiver logado
   useEffect(() => {
     if (localStorage.getItem('token')) {
       navigate('/dashboard');
@@ -19,27 +19,25 @@ const Login = () => {
 
   const handleGoogleLoginSuccess = async (tokenResponse) => {
     try {
-      // Envia o código de autorização para o backend
       const { data } = await api.post('/auth/google', {
         code: tokenResponse.code,
       });
 
-      // Armazena o token JWT e redireciona para o dashboard
       localStorage.setItem('token', data.access_token);
       api.defaults.headers.common['Authorization'] = `Bearer ${data.access_token}`;
-      toast.success(t('login.success'));
+      toast.success(t('login.success', 'Login bem-sucedido!'));
       navigate('/dashboard');
 
     } catch (error) {
       console.error('Google Login Failed:', error);
-      toast.error(t('login.error'));
+      toast.error(t('login.error', 'Falha no login com o Google.'));
     }
   };
 
   const login = useGoogleLogin({
     onSuccess: handleGoogleLoginSuccess,
-    flow: 'auth-code', // Usa o fluxo de código de autorização, que é mais seguro
-    onError: () => toast.error(t('login.error')),
+    flow: 'auth-code',
+    onError: () => toast.error(t('login.error', 'Falha no login com o Google.')),
   });
 
   return (
@@ -54,10 +52,10 @@ const Login = () => {
           <Bot size={32} className="text-white" />
         </motion.div>
         <h1 className="text-4xl font-extrabold tracking-tight text-dark-text">
-          {t('login.welcomeTitle')}
+          {t('login.welcomeTitle', 'Bem-vindo ao ManagerAI')}
         </h1>
         <p className="mt-3 text-lg text-dark-text-secondary">
-          {t('login.welcomeSubtitle')}
+          {t('login.welcomeSubtitle', 'Seu assistente pessoal com IA para otimizar seu trabalho.')}
         </p>
         <div className="mt-10">
           <button
@@ -65,7 +63,7 @@ const Login = () => {
             className="inline-flex w-full items-center justify-center gap-3 rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition-transform hover:scale-105 hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-dark-background"
           >
             <LogIn size={20} />
-            {t('login.googleButton')}
+            {t('login.googleButton', 'Entrar com Google')}
           </button>
         </div>
       </div>
