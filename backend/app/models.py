@@ -1,28 +1,27 @@
 import datetime
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Text 
+from sqlalchemy import (Column, Integer, String, DateTime, 
+                        ForeignKey, Text, Boolean)
 from sqlalchemy.orm import relationship
 from .database import Base
+from sqlalchemy.sql import func 
 
 class User(Base):
     __tablename__ = "users"
+
     id = Column(Integer, primary_key=True, index=True)
-    email = Column(String(255), unique=True, index=True, nullable=False)
-    google_id = Column(String(255), unique=True, index=True, nullable=True)
-
-    # Permitir que a senha e tokens sejam nulos
-    hashed_password = Column(String(255), nullable=True)
-    access_token = Column(Text, nullable=True)
-    refresh_token = Column(Text, nullable=True)
-    expires_at = Column(DateTime, nullable=True)
-
-    # Relacionamentos
-    emails = relationship("Email", back_populates="owner", cascade="all, delete-orphan")
-    tasks = relationship("Task", back_populates="user", cascade="all, delete-orphan")
-    settings = relationship("Setting", back_populates="user", cascade="all, delete-orphan")
-    calendar_events = relationship("CalendarEvent", back_populates="user", cascade="all, delete-orphan")
+    email = Column(String, unique=True, index=True, nullable=False)
+    name = Column(String)
+    google_id = Column(String, unique=True, nullable=True)
+    picture_url = Column(String)
+    access_token = Column(String)
+    refresh_token = Column(String)
+    expires_at = Column(DateTime)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    emails = relationship("Email", back_populates="user", cascade="all, delete-orphan")
+    settings = relationship("Settings", back_populates="user", uselist=False, cascade="all, delete-orphan")
 
 class Setting(Base):
-    # ... (sem alterações)
     __tablename__ = "settings"
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
@@ -56,17 +55,15 @@ class CalendarEvent(Base):
 
 class Email(Base):
     __tablename__ = "emails"
-
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
-    email_id = Column(String(255), unique=True, index=True) # ID do email no Gmail - Aumente se necessário
-    thread_id = Column(String(255), index=True) # ID da thread do email no Gmail
-    subject = Column(String(500)) # Assunto do email
-    sender = Column(String(255)) # Remetente do email
-    snippet = Column(Text) # Trecho do email - Mude para Text
-    body = Column(Text) # Corpo do email - Mude para Text
-    received_at = Column(DateTime, default=datetime.datetime.utcnow)
+    google_email_id = Column(String, unique=True, index=True)
+    thread_id = Column(String, index=True)
+    subject = Column(String)
+    sender = Column(String)
+    snippet = Column(Text)
+    body = Column(Text)
     is_read = Column(Boolean, default=False)
-
-    owner = relationship("User", back_populates="emails")
-
+    received_at = Column(DateTime)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    user = relationship("User", back_populates="emails")

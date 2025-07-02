@@ -1,4 +1,3 @@
-# backend/app/routers/auth.py
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -7,14 +6,10 @@ from ..database import get_db
 from ..services import google
 from ..utils.security import create_access_token
 
-router = APIRouter()
+router = APIRouter(prefix="/auth", tags=["auth"])
 
-@router.post("/google", response_model=schemas.Token)
-def auth_google(code_container: dict, db: Session = Depends(get_db)):
-    """
-    Recebe o código de autorização do frontend, troca por credenciais do Google,
-    e cria ou atualiza o usuário no banco, retornando um token JWT para a sessão.
-    """
+@router.post("/google/callback", response_model=schemas.Token)
+def auth_google_callback(code_container: dict, db: Session = Depends(get_db)):
     code = code_container.get("code")
     if not code:
         raise HTTPException(
@@ -22,7 +17,6 @@ def auth_google(code_container: dict, db: Session = Depends(get_db)):
             detail="O código de autorização do Google não foi fornecido."
         )
 
-    # A função exchange_code_for_credentials agora retorna as informações do usuário e as credenciais
     user_info_tuple = google.exchange_code_for_credentials(code)
     if not user_info_tuple:
         raise HTTPException(
@@ -32,15 +26,23 @@ def auth_google(code_container: dict, db: Session = Depends(get_db)):
 
     user_info, credentials = user_info_tuple
 
-    # get_or_create_user lida com a lógica de banco de dados
-    user = crud.get_or_create_user(db, google_info=user_info, credentials=credentials)
+    credentials_dict = {
+        'token': credentials.token,
+        'refresh_token': credentials.refresh_token,
+        'token_uri': credentials.token_uri,
+        'client_id': credentials.client_id,
+        'client_secret': credentials.client_secret,
+        'scopes': credentials.scopes,
+        'expiry': credentials.expiry
+    }
+
+    user = crud.get_or_create_user(db, google_info=user_info, credentials=credentials_dict)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Não foi possível criar ou recuperar o usuário."
         )
 
-    # Cria um token de acesso para a nossa aplicação
     access_token = create_access_token(data={"sub": user.email})
 
     return {"access_token": access_token, "token_type": "bearer"}

@@ -1,6 +1,6 @@
 import datetime
 from sqlalchemy.orm import Session
-from sqlalchemy import desc
+from typing import Dict, Any, List
 from typing import List, Optional
 
 from . import models, schemas # Certifique-se de que models e schemas são importados
@@ -12,7 +12,6 @@ def get_user(db: Session, user_id: int):
     return db.query(models.User).filter(models.User.id == user_id).first()
 
 def get_user_by_email(db: Session, email: str):
-    """Busca um usuário pelo e-mail."""
     return db.query(models.User).filter(models.User.email == email).first()
 
 def create_user(db: Session, user: schemas.UserCreate, hashed_password: str):
@@ -26,38 +25,37 @@ def create_user(db: Session, user: schemas.UserCreate, hashed_password: str):
     db.refresh(db_user)
     return db_user
 
-def get_or_create_user(db: Session, google_info: dict, credentials):
-    """Busca ou cria um usuário com base nas informações do Google."""
-    user = get_user_by_email(db, email=google_info['email'])
+def get_or_create_user(db: Session, google_info: Dict[str, Any], credentials: Dict[str, Any]) -> models.User:
+    user_email = google_info.get("email")
+    db_user = get_user_by_email(db, email=user_email)
+
+    if db_user:
+        db_user.name = google_info.get("name")
+        db_user.picture_url = google_info.get("picture")
+        db_user.access_token = credentials.get("token")
+        
+        if not db_user.google_id:
+            db_user.google_id = google_info.get("id")
+        if credentials.get("refresh_token"):
+            db_user.refresh_token = credentials.get("refresh_token")
+        db_user.expires_at = credentials.get("expiry")
+    else:
+        db_user = models.User(
+            email=user_email,
+            name=google_info.get("name"),
+            picture_url=google_info.get("picture"),
+            google_id=google_info.get("id"),
+            access_token=credentials.get("token"),
+            refresh_token=credentials.get("refresh_token"),
+            expires_at=credentials.get("expiry")
+        )
+        db.add(db_user)
     
-    if user:
-        # Atualiza os tokens caso o usuário já exista
-        user.google_id = google_info.get('id')
-        user.access_token = credentials.token
-        user.refresh_token = credentials.refresh_token
-        if hasattr(credentials, 'expiry'): # Verifica se 'expiry' existe antes de atribuir
-            user.expires_at = credentials.expiry
-        db.add(user) # Adicionado para garantir que as alterações sejam staged
-        db.commit()
-        db.refresh(user)
-        return user
-    
-    # Cria um novo usuário se ele não for encontrado
-    new_user = models.User(
-        email=google_info['email'],
-        google_id=google_info.get('id'),
-        access_token=credentials.token,
-        refresh_token=credentials.refresh_token,
-        expires_at=credentials.expiry if hasattr(credentials, 'expiry') else None, # Salva a expiração
-        hashed_password=None # Usuários do Google não têm senha local
-    )
-    db.add(new_user)
     db.commit()
-    db.refresh(new_user)
-    return new_user
+    db.refresh(db_user)
+    return db_user
 
 
-# --- Funções CRUD para E-mails (Email) ---
 def create_user_email(db: Session, email: schemas.EmailCreate, user_id: int):
     """Cria um novo e-mail para um usuário."""
     db_email = models.Email(
@@ -86,8 +84,12 @@ def get_email_by_id(db: Session, email_id: int):
     return db.query(models.Email).filter(models.Email.id == email_id).first()
 
 def get_email_by_google_id(db: Session, google_email_id: str, user_id: int):
-    """Retorna um e-mail pelo ID do Google."""
-    return db.query(models.Email).filter(models.Email.email_id == google_email_id, models.Email.user_id == user_id).first()
+    return db.query(models.Email).filter(models.Email.google_email_id == google_email_id, models.Email.user_id == user_id).first()
+
+def create_multiple_user_emails(db: Session, emails: List[schemas.EmailCreate], user_id: int):
+    db_emails = [models.Email(**email.model_dump(), user_id=user_id) for email in emails]
+    db.bulk_save_objects(db_emails)
+    db.commit()
 
 def mark_email_as_read(db: Session, email_id: int):
     """Marca um e-mail como lido."""
