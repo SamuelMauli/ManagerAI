@@ -8,11 +8,18 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String(255), unique=True, index=True, nullable=False)
     google_id = Column(String(255), unique=True, index=True, nullable=True)
-    
-    # Corrigido: Permitir que a senha e tokens sejam nulos
-    hashed_password = Column(String(255), nullable=True) 
+
+    # Permitir que a senha e tokens sejam nulos
+    hashed_password = Column(String(255), nullable=True)
     access_token = Column(Text, nullable=True)
     refresh_token = Column(Text, nullable=True)
+    expires_at = Column(DateTime, nullable=True)
+
+    # Relacionamentos
+    emails = relationship("Email", back_populates="owner", cascade="all, delete-orphan")
+    tasks = relationship("Task", back_populates="user", cascade="all, delete-orphan")
+    settings = relationship("Setting", back_populates="user", cascade="all, delete-orphan")
+    calendar_events = relationship("CalendarEvent", back_populates="user", cascade="all, delete-orphan")
 
 class Setting(Base):
     # ... (sem alterações)
@@ -21,18 +28,21 @@ class Setting(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
     key = Column(String(100), index=True)
     value = Column(Text)
-    user = relationship("User")
+    user = relationship("User", back_populates="settings")
 
 class Task(Base):
-    # ... (sem alterações)
     __tablename__ = "tasks"
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String(255), nullable=False)
+    description = Column(Text)
+    due_date = Column(DateTime)
+    completed = Column(Boolean, default=False)
     status = Column(String(100))
     project_id = Column(String(100))
     assignee = Column(String(255))
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
     user_id = Column(Integer, ForeignKey("users.id"))
-    user = relationship("User")
+    user = relationship("User", back_populates="tasks")
 
 class CalendarEvent(Base):
     # ... (sem alterações)
@@ -42,7 +52,7 @@ class CalendarEvent(Base):
     start_time = Column(DateTime)
     end_time = Column(DateTime)
     user_id = Column(Integer, ForeignKey("users.id"))
-    user = relationship("User")
+    user = relationship("User", back_populates="calendar_events")
 
 class Email(Base):
     __tablename__ = "emails"
@@ -59,3 +69,4 @@ class Email(Base):
     is_read = Column(Boolean, default=False)
 
     owner = relationship("User", back_populates="emails")
+

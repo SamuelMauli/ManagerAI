@@ -10,7 +10,7 @@ const Login = () => {
     onSuccess: async (codeResponse) => {
       try {
         const code = codeResponse.code;
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+        const apiBaseUrl = import.meta.env.VITE_API_URL;
 
         const response = await fetch(`${apiBaseUrl}/auth/google/callback`, {
           method: 'POST',
@@ -56,4 +56,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Login
