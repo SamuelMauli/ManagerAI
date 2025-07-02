@@ -11,3 +11,9 @@ google-auth-oauthlib
 google-generativeai
 httpx
 python-multipart
+psycopg2-binary
+pydantic
+python-dotenv
+authlib
+requests
+itsdangerous 
