@@ -18,7 +18,9 @@ apiClient.interceptors.request.use((config) => {
 export default {
   // Auth
   login: (credentials) => apiClient.post('/auth/login', credentials),
-  getMe: () => apiClient.get('/users/me'),
+  register: (userData) => apiClient.post('/auth/register', userData),
+  googleAuthCallback: (code) => apiClient.post('/auth/google/callback', { code }),
+  getCurrentUser: () => apiClient.get('/auth/me'),
 
   // Chat
   postChatMessage: (message) => apiClient.post('/chat', { message }),
@@ -32,16 +34,22 @@ export default {
   saveYouTrackSettings: (settings) => apiClient.post('/settings/youtrack', settings), // Supondo esta rota
   
   // Tasks
-  getTasks: (params) => apiClient.get('/tasks', { params }),
-  getFilterData: () => apiClient.get('/tasks/filters'), // Supondo esta rota
+  getTasks: (params = {}) => apiClient.get('/tasks/', { params }), // Adicione esta linha
+  createTask: (taskData) => apiClient.post('/tasks/', taskData), // Adicione esta linha
+  updateTask: (taskId, taskData) => apiClient.put(`/tasks/${taskId}`, taskData), // Adicione esta linha
+  deleteTask: (taskId) => apiClient.delete(`/tasks/${taskId}`), // Adicione esta linha
+
 
   // Google & Email (incluindo Settings)
-  getGoogleAuthUrl: () => apiClient.get('/google/auth-url'),
-  handleGoogleCallback: (code) => apiClient.get(`/google/callback?code=${code}`),
-  syncGoogleEmails: () => apiClient.post('/google/sync-emails'),
-  getSyncedEmails: () => apiClient.get('/google/emails'),
-  getEmailSettings: () => apiClient.get('/settings/email'), // Supondo esta rota
-  saveEmailSettings: (settings) => apiClient.post('/settings/email', settings), // Supondo esta rota
+  syncEmails: () => apiClient.post('/emails/sync'),
+  // Endpoint para buscar e-mails do banco de dados
+  getSyncedEmails: () => apiClient.get('/emails/'),
+  // Endpoint para buscar e-mails não lidos
+  getUnreadEmails: () => apiClient.get('/emails/unread'),
+  // Endpoint para marcar e-mail como lido
+  markEmailAsRead: (emailId) => apiClient.post(`/emails/${emailId}/mark_as_read`),
+  // Endpoint para buscar detalhes de um email específico
+  getEmailDetails: (emailId) => apiClient.get(`/emails/${emailId}`),
 
   // --- NOVAS ROTAS ---
 
