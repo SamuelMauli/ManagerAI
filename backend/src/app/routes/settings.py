@@ -1,40 +1,33 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from app import schemas
+from app.database import get_db
+from app.services.google_service import get_gmail_service
 
-from .. import crud, models, schemas
-from ..core.security import get_current_active_user
-from ..database import get_db  
-
-outer = APIRouter(
-    prefix="/settings", 
-    tags=["Settings"]
-)
+router = APIRouter()
 
 @router.post("/gmail", status_code=200, response_model=schemas.message.Message)
-def save_gmail_settings(
-    settings_in: schemas.setting.GmailSettings,
-    db: Session = Depends(get_db),  
-    current_user: models.User = Depends(get_current_active_user)
-):
-    try:
-        crud.setting.update_setting(
-            db=db, user_id=current_user.id, key="gmail_email", value=settings_in.email
+def test_gmail_connection(db: Session = Depends(get_db)):
+    """
+    Testa a conexão com a API do Gmail.
+    """
+    service = get_gmail_service()
+    if not service:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Não foi possível autenticar com o serviço do Gmail. Verifique as credenciais no servidor."
         )
-        if settings_in.password:
-            crud.setting.update_setting(
-                db=db, user_id=current_user.id, key="gmail_password", value=settings_in.password
-            )
-        return {"message": "Configurações do Gmail salvas com sucesso!"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Erro ao salvar as configurações do Gmail: {e}")
 
-@router.get("/gmail", response_model=schemas.setting.GmailSettings)
-def get_gmail_settings(
-    db: Session = Depends(get_db), # Uso correto da dependência
-    current_user: models.User = Depends(get_current_active_user)
-):
     try:
-        email = crud.setting.get_setting(db=db, user_id=current_user.id, key="gmail_email")
-        return schemas.setting.GmailSettings(email=email or "", password="")
-    except Exception:
-        return schemas.setting.GmailSettings(email="", password="")
+        profile = service.users().getProfile(userId='me').execute()
+        email = profile.get('emailAddress')
+        return {"message": f"Conexão com o Gmail bem-sucedida para o usuário: {email}"}
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Falha ao comunicar com o Gmail: {e}"
+        )
+
+@router.get("/", status_code=status.HTTP_200_OK)
+def get_settings():
+    return {"message": "Endpoint de configurações está ativo."}

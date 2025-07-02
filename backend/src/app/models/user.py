@@ -11,3 +11,10 @@ class User(Base):
     hashed_password = Column(String(255), nullable=False)
     is_active = Column(Boolean(), default=True)
     is_superuser = Column(Boolean(), default=False)
+
+    emails = relationship("Email", back_populates="owner", cascade="all, delete-orphan")
+    projects = relationship("Project", back_populates="owner", cascade="all, delete-orphan")
+    tasks = relationship("Task", back_populates="owner", cascade="all, delete-orphan")
+    google_credentials = relationship("GoogleCredentials", back_populates="owner", uselist=False, cascade="all, delete-orphan")
+    
+    calendar_events = relationship("CalendarEvent", back_populates="owner", cascade="all, delete-orphan")

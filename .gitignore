@@ -19,6 +19,8 @@ pnpm-debug.log*
 .vite/
 .next/
 .vercel/
+frontend/package.json
+frontend/package-lock.json
 
 # Ambiente virtual Python
 .venv/
@@ -33,3 +35,5 @@ Thumbs.db
 
 # Relatórios de cobertura de testes
 /coveragebackend/.env
+
+backend/client_secret.json

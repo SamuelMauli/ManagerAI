@@ -1,32 +1,20 @@
-# Use an official Python runtime as a parent image
+# Use uma imagem oficial do Python como imagem pai
 FROM python:3.9-slim
 
-# Set the working directory in the container
+# Define variáveis de ambiente para otimizar o Python no Docker
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+# Define o diretório de trabalho dentro do contêiner
 WORKDIR /app
 
-# ---- START OF FIX ----
-# Install system dependencies needed to build mysqlclient
-RUN apt-get update && apt-get install -y \
-    pkg-config \
-    default-libmysqlclient-dev \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
-# ---- END OF FIX ----
-
-# Copy the requirements file into the container at /app
-COPY requirements.txt .
-
-# Install any needed packages specified in requirements.txt
-# Also upgrading pip as suggested by the log
-RUN pip install --upgrade pip
+# Copia e instala as dependências primeiro para aproveitar o cache do Docker
+COPY ./requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the backend source code into the container
-COPY ./src /app/src
+# Copia todo o código da pasta backend para o diretório /app do contêiner
+COPY . .
 
-# Expose the port the app runs on
-EXPOSE 8000
-
-# Command to run the application
-# We use --host 0.0.0.0 to make it accessible from outside the container
-CMD ["uvicorn", "src.app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+# Define o comando para executar a aplicação
+# A flag --app-dir diz ao Uvicorn para adicionar o diretório 'src' ao caminho do Python
+CMD ["uvicorn", "app.main:app", "--app-dir", "src", "--host", "0.0.0.0", "--port", "8000", "--reload"]

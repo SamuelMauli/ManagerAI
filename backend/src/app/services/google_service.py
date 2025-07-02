@@ -1,56 +1,63 @@
 import os
-import pickle
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
+from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
+import logging
 
-# Define the scopes for the services you want to access
-SCOPES = [
-    'https://www.googleapis.com/auth/gmail.readonly',
-    'https://www.googleapis.com/auth/calendar.readonly',
-    'https://www.googleapis.com/auth/drive.readonly'
-]
+# Configuração do logging
+logging.basicConfig(level=logging.INFO)
 
-def get_google_creds():
-    """
-    Authenticates with Google and returns credentials.
-    """
-    creds = None
-    # The file token.pickle stores the user's access and refresh tokens, and is
-    # created automatically when the authorization flow completes for the first time.
-    if os.path.exists('token.pickle'):
-        with open('token.pickle', 'rb') as token:
-            creds = pickle.load(token)
-    # If there are no (valid) credentials available, let the user log in.
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            flow = InstalledAppFlow.from_client_secrets_file(
-                'client_secret.json', SCOPES)
-            creds = flow.run_local_server(port=0)
-        # Save the credentials for the next run
-        with open('token.pickle', 'wb') as token:
-            pickle.dump(creds, token)
-    return creds
+# AJUSTE: Caminho para o arquivo JSON da conta de serviço
+# Este arquivo deve ser colocado na raiz do backend e o caminho
+# deve ser definido em uma variável de ambiente.
+SERVICE_ACCOUNT_FILE = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "service_account.json")
+SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
 
 def get_gmail_service():
     """
-    Returns a Gmail API service object.
+    Cria e retorna um serviço do Gmail autenticado usando uma conta de serviço.
     """
-    creds = get_google_creds()
-    return build('gmail', 'v1', credentials=creds)
+    creds = None
+    try:
+        # Carrega as credenciais a partir do arquivo da conta de serviço
+        creds = Credentials.from_service_account_file(
+            SERVICE_ACCOUNT_FILE, scopes=SCOPES
+        )
+        
+        # Você precisa delegar autoridade de todo o domínio para a conta de serviço
+        # no seu Google Workspace Admin Console para que ela possa personificar um usuário.
+        # Substitua 'user@yourdomain.com' pelo e-mail do usuário que você quer personificar.
+        delegated_creds = creds.with_subject(os.getenv("GMAIL_USER_EMAIL"))
+        
+        service = build("gmail", "v1", credentials=delegated_creds)
+        logging.info("Serviço do Gmail autenticado com sucesso.")
+        return service
 
-def get_calendar_service():
-    """
-    Returns a Google Calendar API service object.
-    """
-    creds = get_google_creds()
-    return build('calendar', 'v3', credentials=creds)
+    except FileNotFoundError:
+        logging.error(f"Erro: O arquivo de credenciais '{SERVICE_ACCOUNT_FILE}' não foi encontrado.")
+        logging.error("Certifique-se de que o arquivo JSON da conta de serviço está no local correto e a variável de ambiente GOOGLE_APPLICATION_CREDENTIALS está definida.")
+        return None
+    except Exception as e:
+        logging.error(f"Ocorreu um erro ao criar o serviço do Gmail: {e}")
+        return None
 
-def get_drive_service():
-    """
-    Returns a Google Drive API service object.
-    """
-    creds = get_google_creds()
-    return build('drive', 'v3', credentials=creds)
+# Função para buscar e-mails (exemplo de uso do serviço)
+def fetch_emails():
+    service = get_gmail_service()
+    if not service:
+        return []
+    
+    try:
+        results = service.users().messages().list(userId="me", maxResults=5).execute()
+        messages = results.get("messages", [])
+        
+        email_list = []
+        for msg in messages:
+            msg_data = service.users().messages().get(userId="me", id=msg["id"]).execute()
+            email_list.append(msg_data)
+            
+        return email_list
+        
+    except HttpError as error:
+        logging.error(f"Ocorreu um erro HTTP ao buscar e-mails: {error}")
+        return []

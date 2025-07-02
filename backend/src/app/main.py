@@ -1,55 +1,41 @@
+# backend/src/app/main.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routes import tasks, projects, settings, jobs, dashboard, emails, chat 
-from .database import Base, engine
-from .routes import (
-    dashboard,
-    emails,
-    tasks,
-    chat,
-    settings as settings_router,
-    jobs
-)
-from .initial_data import create_first_superuser
+from contextlib import asynccontextmanager
+import asyncio
 
-Base.metadata.create_all(bind=engine)
+from app.routes import auth, users, tasks, emails, settings, chat, calendar, dashboard
+from app.services.email_service import start_email_fetching
 
-app = FastAPI(
-    title="ManagerAI API",
-    description="API para o sistema ManagerAI, unindo produtividade e inteligência artificial.",
-    version="1.0.0"
-)
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    print("Iniciando a busca de e-mails em segundo plano...")
+    try:
+        asyncio.create_task(start_email_fetching())
+    except Exception as e:
+        print(f"Não foi possível iniciar a busca de emails: {e}")
+    yield
+    print("Aplicação encerrada.")
 
-# Configuração do CORS
-origins = [
-    "http://localhost",
-    "http://localhost:5173",
-]
+app = FastAPI(lifespan=lifespan, title="ManagerAI", version="0.1.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# --- Inclusão das Rotas da API ---
-app.include_router(settings_router.router, prefix="/api", tags=["Settings"])
-app.include_router(dashboard.router, prefix="/api", tags=["Dashboard"])
-app.include_router(emails.router, prefix="/api", tags=["Emails"])
-app.include_router(tasks.router, prefix="/api", tags=["Tasks"])
-app.include_router(chat.router, prefix="/api", tags=["Chat"])
-app.include_router(jobs.router, prefix="/api", tags=["Jobs"])
+app.include_router(auth.router, prefix="/api/auth", tags=["Auth"])
+app.include_router(users.router, prefix="/api/users", tags=["Users"])
+app.include_router(tasks.router, prefix="/api/tasks", tags=["Tasks"])
+app.include_router(emails.router, prefix="/api/emails", tags=["Emails"])
+app.include_router(settings.router, prefix="/api/settings", tags=["Settings"])
+app.include_router(chat.router, prefix="/api/chat", tags=["Chat"])
+app.include_router(calendar.router, prefix="/api/calendar", tags=["Calendar"])
+app.include_router(dashboard.router, prefix="/api/dashboard", tags=["Dashboard"])
 
-@app.on_event("startup")
-async def startup_event():
-    """
-    Cria o primeiro superusuário ao iniciar a aplicação, se ele não existir.
-    """
-    create_first_superuser()
-
-@app.get("/")
-def read_root():
-    """Endpoint raiz da API."""
-    return {"message": "Bem-vindo à API do ManagerAI"}
+@app.get("/", tags=["Root"])
+async def read_root():
+    return {"message": "Welcome to ManagerAI API"}

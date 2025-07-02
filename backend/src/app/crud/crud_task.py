@@ -42,5 +42,11 @@ class CRUDTask:
     def get_distinct_assignees(self, db: Session, *, owner_id: int) -> List[str]:
         results = db.query(distinct(models.Task.assignee)).filter(models.Task.owner_id == owner_id, models.Task.assignee.isnot(None)).all()
         return [result[0] for result in results]
+   
+    def get_tasks_by_project_id(self, db: Session, *, project_id: str, owner_id: int) -> list[Task]:
+        return db.query(self.model).filter(
+            self.model.project_id == project_id, 
+            self.model.owner_id == owner_id
+        ).all()
 
-task = CRUDTask()
+task = CRUDTask(Task)
