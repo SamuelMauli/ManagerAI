@@ -26,9 +26,9 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./backend:/app 
+      - ./backend:/app
     env_file:
-      - .env 
+      - .env
     depends_on:
       db:
         condition: service_healthy

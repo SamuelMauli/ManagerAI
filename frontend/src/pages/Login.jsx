@@ -1,3 +1,4 @@
+// frontend/src/pages/Login.jsx
 import React, { useEffect } from 'react';
 import { useGoogleLogin } from '@react-oauth/google';
 import { useNavigate } from 'react-router-dom';
@@ -11,6 +12,7 @@ const Login = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
+  // Redireciona se o usuário já estiver logado
   useEffect(() => {
     if (localStorage.getItem('token')) {
       navigate('/dashboard');
@@ -19,38 +21,42 @@ const Login = () => {
 
   const handleGoogleLoginSuccess = async (tokenResponse) => {
     try {
+      // Envia o 'code' para o backend
       const { data } = await api.post('/auth/google', {
         code: tokenResponse.code,
       });
 
+      // Armazena o token JWT da sua API e configura o cabeçalho do axios
       localStorage.setItem('token', data.access_token);
       api.defaults.headers.common['Authorization'] = `Bearer ${data.access_token}`;
+
       toast.success(t('login.success', 'Login bem-sucedido!'));
       navigate('/dashboard');
 
     } catch (error) {
-      console.error('Google Login Failed:', error);
-      toast.error(t('login.error', 'Falha no login com o Google.'));
+      console.error('Falha no Login com Google:', error);
+      toast.error(t('login.error', 'Falha no login com o Google. Verifique o console.'));
     }
   };
 
   const login = useGoogleLogin({
     onSuccess: handleGoogleLoginSuccess,
+    // 'auth-code' é o fluxo correto para enviar o código para o backend
     flow: 'auth-code',
     onError: () => toast.error(t('login.error', 'Falha no login com o Google.')),
   });
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-dark-background p-4">
-      <div className="w-full max-w-md text-center">
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mx-auto mb-8 flex h-16 w-16 items-center justify-center rounded-full bg-dark-accent"
-        >
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-md text-center"
+      >
+        <div className="mx-auto mb-8 flex h-16 w-16 items-center justify-center rounded-full bg-dark-accent">
           <Bot size={32} className="text-white" />
-        </motion.div>
+        </div>
         <h1 className="text-4xl font-extrabold tracking-tight text-dark-text">
           {t('login.welcomeTitle', 'Bem-vindo ao ManagerAI')}
         </h1>
@@ -66,7 +72,7 @@ const Login = () => {
             {t('login.googleButton', 'Entrar com Google')}
           </button>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };
