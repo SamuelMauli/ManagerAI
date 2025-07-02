@@ -1,78 +1,64 @@
-// frontend/src/pages/Login.jsx
-import React, { useEffect } from 'react';
 import { useGoogleLogin } from '@react-oauth/google';
 import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-hot-toast';
-import { motion } from 'framer-motion';
-import { useTranslation } from 'react-i18next';
-import { Bot, LogIn } from 'lucide-react';
-import api from '../services/api';
+import toast from 'react-hot-toast';
+import googleIcon from '../assets/google-icon.svg';
 
 const Login = () => {
   const navigate = useNavigate();
-  const { t } = useTranslation();
 
-  // Redireciona se o usuário já estiver logado
-  useEffect(() => {
-    if (localStorage.getItem('token')) {
-      navigate('/dashboard');
-    }
-  }, [navigate]);
+  const handleLogin = useGoogleLogin({
+    onSuccess: async (codeResponse) => {
+      try {
+        const code = codeResponse.code;
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
-  const handleGoogleLoginSuccess = async (tokenResponse) => {
-    try {
-      // Envia o 'code' para o backend
-      const { data } = await api.post('/auth/google', {
-        code: tokenResponse.code,
-      });
+        const response = await fetch(`${apiBaseUrl}/auth/google/callback`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ code: code }),
+        });
 
-      // Armazena o token JWT da sua API e configura o cabeçalho do axios
-      localStorage.setItem('token', data.access_token);
-      api.defaults.headers.common['Authorization'] = `Bearer ${data.access_token}`;
+        const data = await response.json();
 
-      toast.success(t('login.success', 'Login bem-sucedido!'));
-      navigate('/dashboard');
+        if (!response.ok) {
+          throw new Error(data.detail || 'Falha ao trocar código pelo token no backend.');
+        }
 
-    } catch (error) {
-      console.error('Falha no Login com Google:', error);
-      toast.error(t('login.error', 'Falha no login com o Google. Verifique o console.'));
-    }
-  };
+        // AQUI ESTÁ A CORREÇÃO CRÍTICA
+        // Salvamos o token com a chave que o Dashboard vai procurar
+        localStorage.setItem('google_access_token', data.access_token);
+        
+        toast.success('Login bem-sucedido!');
+        navigate('/dashboard', { replace: true });
 
-  const login = useGoogleLogin({
-    onSuccess: handleGoogleLoginSuccess,
-    // 'auth-code' é o fluxo correto para enviar o código para o backend
+      } catch (error) => {
+        toast.error(`Falha no Login: ${error.message}`);
+      }
+    },
     flow: 'auth-code',
-    onError: () => toast.error(t('login.error', 'Falha no login com o Google.')),
   });
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-dark-background p-4">
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md text-center"
-      >
-        <div className="mx-auto mb-8 flex h-16 w-16 items-center justify-center rounded-full bg-dark-accent">
-          <Bot size={32} className="text-white" />
+    <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
+      <div className="w-full max-w-sm p-8 space-y-6 bg-white rounded-lg shadow-md dark:bg-gray-800">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-50">
+            Manager.AI
+          </h1>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">
+            Faça login para continuar
+          </p>
         </div>
-        <h1 className="text-4xl font-extrabold tracking-tight text-dark-text">
-          {t('login.welcomeTitle', 'Bem-vindo ao ManagerAI')}
-        </h1>
-        <p className="mt-3 text-lg text-dark-text-secondary">
-          {t('login.welcomeSubtitle', 'Seu assistente pessoal com IA para otimizar seu trabalho.')}
-        </p>
-        <div className="mt-10">
-          <button
-            onClick={() => login()}
-            className="inline-flex w-full items-center justify-center gap-3 rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition-transform hover:scale-105 hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-dark-background"
-          >
-            <LogIn size={20} />
-            {t('login.googleButton', 'Entrar com Google')}
-          </button>
-        </div>
-      </motion.div>
+        <button
+          onClick={() => handleLogin()}
+          className="w-full inline-flex justify-center items-center gap-2 py-2.5 px-4 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-600"
+        >
+          <img src={googleIcon} alt="Google Icon" className="w-5 h-5" />
+          Entrar com o Google
+        </button>
+      </div>
     </div>
   );
 };

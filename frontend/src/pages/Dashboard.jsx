@@ -1,141 +1,75 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useTranslation } from 'react-i18next';
-import api from '../services/api';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Briefcase, Calendar, Mail, CheckCircle, Clock } from 'lucide-react';
-import CalendarWidget from '../components/dashboard/CalendarWidget';
-import ActivityFeed from '../components/dashboard/ActivityFeed';
+import { useState, useEffect, useCallback } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Mail, Loader2 } from 'lucide-react';
+import toast from 'react-hot-toast';
+
+const fetchUnreadEmails = async (token) => {
+  const response = await fetch(`http://localhost:8000/emails/unread`, {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.detail || 'Falha ao buscar e-mails.');
+  }
+  return response.json();
+};
 
 const Dashboard = () => {
-  const { t } = useTranslation();
-  const [projects, setProjects] = useState([]);
-  const [selectedProject, setSelectedProject] = useState(null);
-  const [dashboardData, setDashboardData] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [emails, setEmails] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        const response = await api.getYoutrackProjects();
-        setProjects(response.data);
-        if (response.data.length > 0) {
-          setSelectedProject(response.data[0].id);
-        }
-      } catch (error) {
-        console.error("Failed to fetch projects", error);
-      }
-    };
-    fetchProjects();
-  }, []);
-
-  const fetchDashboardData = useCallback(async () => {
-    if (!selectedProject) return;
+  const loadEmails = useCallback(async () => {
     setLoading(true);
+    const token = localStorage.getItem('google_access_token');
+    
+    if (!token) {
+        toast.error("Sessão não encontrada. Faça login novamente.");
+        setLoading(false);
+        return;
+    }
+
     try {
-      const response = await api.getProjectDashboard(selectedProject);
-      setDashboardData(response.data);
+      const data = await fetchUnreadEmails(token);
+      setEmails(data.emails);
     } catch (error) {
-      console.error("Failed to fetch dashboard data", error);
-      setDashboardData(null);
+      toast.error(error.message);
     } finally {
       setLoading(false);
     }
-  }, [selectedProject]);
+  }, []);
 
   useEffect(() => {
-    fetchDashboardData();
-  }, [fetchDashboardData]);
-
-  const chartData = dashboardData?.task_counts_by_status.map(item => ({
-    name: item.status,
-    count: item.count,
-  })) || [];
+    loadEmails();
+  }, [loadEmails]);
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">{t('dashboard.title')}</h1>
-        <div className="w-64">
-          <Select onValueChange={setSelectedProject} value={selectedProject}>
-            <SelectTrigger>
-              <SelectValue placeholder={t('dashboard.select_project')} />
-            </SelectTrigger>
-            <SelectContent>
-              {projects.map((p) => (
-                <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      {loading && <p>{t('loading')}...</p>}
-      
-      {dashboardData && !loading && (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t('dashboard.total_tasks')}</CardTitle>
-              <Briefcase className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{dashboardData.total_tasks}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t('dashboard.unresolved_tasks')}</CardTitle>
-              <Clock className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{dashboardData.unresolved_tasks}</div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      <div className="grid gap-6 md:grid-cols-2">
-        {dashboardData && !loading && (
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('dashboard.tasks_by_status')}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="count" fill="#8884d8" />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+    <Card className="col-span-1 lg:col-span-4">
+      <CardHeader className="flex flex-row items-center gap-2">
+        <Mail className="w-5 h-5 text-muted-foreground" />
+        <CardTitle>Caixa de Entrada - Não Lidos</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {loading ? (
+          <div className="flex items-center justify-center p-8">
+            <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+          </div>
+        ) : emails.length > 0 ? (
+          <ul className="space-y-4">
+            {emails.map((email) => (
+              <li key={email.id} className="p-3 transition-colors rounded-lg hover:bg-muted">
+                <p className="font-semibold text-sm truncate">{email.from}</p>
+                <p className="font-medium">{email.subject}</p>
+                <p className="text-xs text-muted-foreground truncate">{email.snippet}</p>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="py-8 text-center text-muted-foreground">Nenhum e-mail não lido. Caixa de entrada limpa! ✨</p>
         )}
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('dashboard.upcoming_events')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <CalendarWidget />
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardHeader>
-            <CardTitle>{t('dashboard.activity_feed')}</CardTitle>
-        </CardHeader>
-        <CardContent>
-            <ActivityFeed />
-        </CardContent>
-      </Card>
-
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 

@@ -1,30 +1,54 @@
-// frontend/src/pages/LoginCallback.jsx
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 const LoginCallback = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Extrai o token dos parâmetros da URL
     const params = new URLSearchParams(location.search);
-    const token = params.get('token');
+    const code = params.get('code');
 
-    if (token) {
-      // Salva o token para uso futuro em chamadas de API
-      localStorage.setItem('user_token', token);
-      // Redireciona o usuário para o dashboard ou página principal
-      navigate('/dashboard'); 
-    } else {
-      // Se não houver token, houve um erro. Redirecione para a página de login.
+    if (!code) {
+      toast.error('Falha no login: Código de autorização não encontrado.');
       navigate('/login');
+      return;
     }
+
+    const exchangeCodeForToken = async () => {
+      try {
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+        const response = await fetch(`${apiBaseUrl}/auth/google/callback`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code }),
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.detail || 'Erro ao autenticar com o servidor.');
+        }
+
+        // AQUI ESTÁ A MUDANÇA CRÍTICA
+        // Vamos salvar o token de acesso do Google que será usado nas chamadas de API
+        localStorage.setItem('google_access_token', data.access_token);
+        
+        toast.success('Login realizado com sucesso!');
+        navigate('/dashboard', { replace: true });
+
+      } catch (error) {
+        toast.error(`Erro: ${error.message}`);
+        navigate('/login', { replace: true });
+      }
+    };
+
+    exchangeCodeForToken();
   }, [location, navigate]);
 
   return (
-    <div>
-      <p>Autenticando...</p>
+    <div className="flex items-center justify-center h-screen">
+      <p>Autenticando, por favor aguarde...</p>
     </div>
   );
 };

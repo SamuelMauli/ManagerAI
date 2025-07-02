@@ -1,56 +1,43 @@
-import React from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { Bot, LogOut } from 'lucide-react';
+import { NavLink } from 'react-router-dom';
+import { Home, Bot, CheckCircle, Mail, Calendar, BarChart2 } from 'lucide-react';
 
-import { 
-  LayoutDashboard, 
-  MessageSquare, 
-  Calendar, 
-  FileText, 
-  Settings as SettingsIcon 
-} from 'lucide-react';
+const navItems = [
+  { to: '/dashboard', icon: Home, label: 'Dashboard' },
+  { to: '/chat', icon: Bot, label: 'Chat IA' },
+  { to: '/tasks', icon: CheckCircle, label: 'Tarefas' },
+  { to: '/emails', icon: Mail, label: 'Emails' },
+  { to: '/calendar', icon: Calendar, label: 'Calendário' },
+  { to: '/reports', icon: BarChart2, label: 'Relatórios' },
+];
 
 const Sidebar = () => {
-  const { t } = useTranslation();
-  const location = useLocation();
-
-  const navItems = [
-    { href: '/', icon: LayoutDashboard, label: t('sidebar.dashboard') },
-    { href: '/chat', icon: MessageSquare, label: t('sidebar.chat') },
-    { href: '/calendar', icon: Calendar, label: t('sidebar.calendar') },
-    { href: '/reports', icon: FileText, label: t('sidebar.reports') },
-    { href: '/settings', icon: SettingsIcon, label: t('sidebar.settings') },
-  ];
-
-  const isActive = (path) => location.pathname === path;
+  const baseClasses = 'flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary';
+  const activeClasses = 'bg-muted text-primary';
 
   return (
-    <aside className="flex h-full w-64 flex-col border-r bg-background p-4">
-      <div className="mb-8 flex items-center gap-2">
-        <Bot size={32} className="text-primary" />
-        <h1 className="text-2xl font-bold">ManagerAI</h1>
-      </div>
-
-      <nav className="flex-1 space-y-2">
-        {navItems.map((item) => (
-          <NavLink
-            key={item.href}
-            to={item.href}
-            className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:bg-muted hover:text-foreground
-              ${isActive(item.href) ? 'bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground' : ''}`}
-          >
-            <item.icon className="h-5 w-5" />
-            {item.label}
+    <aside className="hidden w-64 border-r bg-background md:block">
+      <div className="flex flex-col h-full">
+        <div className="flex items-center h-16 px-6 border-b">
+          <NavLink to="/" className="flex items-center gap-2 font-semibold">
+            <Bot className="w-6 h-6" />
+            <span>Manager.AI</span>
           </NavLink>
-        ))}
-      </nav>
-
-      <div className="mt-auto">
-        <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:bg-muted hover:text-foreground">
-          <LogOut className="h-5 w-5" />
-          {t('sidebar.logout')}
-        </button>
+        </div>
+        <nav className="flex-1 px-4 py-4">
+          <ul className="space-y-1">
+            {navItems.map((item) => (
+              <li key={item.label}>
+                <NavLink
+                  to={item.to}
+                  className={({ isActive }) => `${baseClasses} ${isActive ? activeClasses : ''}`}
+                >
+                  <item.icon className="w-4 h-4" />
+                  {item.label}
+                </NavLink>
+              </li>
+            ))}
+          </ul>
+        </nav>
       </div>
     </aside>
   );
