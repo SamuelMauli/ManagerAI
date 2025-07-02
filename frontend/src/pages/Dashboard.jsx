@@ -1,100 +1,140 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { motion } from 'framer-motion';
-import { BarChart, Mail, CheckSquare, LoaderCircle } from 'lucide-react';
-import { getDashboardStats, getSummarizedEmails } from '../services/api';
-
-const StatCard = ({ icon, label, value, color, isLoading }) => (
-  <motion.div
-    className="transform rounded-2xl border border-white/10 bg-dark-card/60 p-6 shadow-lg backdrop-blur-lg transition-transform hover:-translate-y-1"
-    whileHover={{ scale: 1.05 }}
-  >
-    <div className="flex items-center justify-between">
-      <p className="text-md font-medium text-dark-text-secondary">{label}</p>
-      <div className={`rounded-full bg-${color}-500/20 p-2`}>
-        {icon}
-      </div>
-    </div>
-    <div className="mt-2 text-4xl font-bold text-dark-text">
-        {isLoading ? <LoaderCircle className="h-8 w-8 animate-spin" /> : value}
-    </div>
-  </motion.div>
-);
+import api from '../services/api';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Briefcase, Calendar, Mail, CheckCircle, Clock } from 'lucide-react';
+import CalendarWidget from '../components/dashboard/CalendarWidget';
+import ActivityFeed from '../components/dashboard/ActivityFeed';
 
 const Dashboard = () => {
   const { t } = useTranslation();
-  const [stats, setStats] = useState({ unread_emails: 0, pending_tasks: 0, active_projects: 0 });
-  const [emails, setEmails] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [projects, setProjects] = useState([]);
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [dashboardData, setDashboardData] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchProjects = async () => {
       try {
-        setLoading(true);
-        const statsRes = await getDashboardStats();
-        setStats(statsRes.data);
-        const emailsRes = await getSummarizedEmails();
-        setEmails(emailsRes.data);
+        const response = await api.getYoutrackProjects();
+        setProjects(response.data);
+        if (response.data.length > 0) {
+          setSelectedProject(response.data[0].id);
+        }
       } catch (error) {
-        console.error("Failed to fetch dashboard data:", error);
-      } finally {
-        setLoading(false);
+        console.error("Failed to fetch projects", error);
       }
     };
-    fetchData();
+    fetchProjects();
   }, []);
 
+  const fetchDashboardData = useCallback(async () => {
+    if (!selectedProject) return;
+    setLoading(true);
+    try {
+      const response = await api.getProjectDashboard(selectedProject);
+      setDashboardData(response.data);
+    } catch (error) {
+      console.error("Failed to fetch dashboard data", error);
+      setDashboardData(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedProject]);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
+
+  const chartData = dashboardData?.task_counts_by_status.map(item => ({
+    name: item.status,
+    count: item.count,
+  })) || [];
+
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-4xl font-extrabold tracking-tight text-dark-text">
-          {t('sidebar.dashboard')}
-        </h1>
-        <p className="mt-2 text-lg text-dark-text-secondary">
-          {t('dashboard.welcome')}
-        </p>
+    <div className="p-6 space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold">{t('dashboard.title')}</h1>
+        <div className="w-64">
+          <Select onValueChange={setSelectedProject} value={selectedProject}>
+            <SelectTrigger>
+              <SelectValue placeholder={t('dashboard.select_project')} />
+            </SelectTrigger>
+            <SelectContent>
+              {projects.map((p) => (
+                <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        <StatCard
-          label={t('dashboard.unreadEmails')}
-          value={stats.unread_emails}
-          icon={<Mail className="h-6 w-6 text-blue-400" />}
-          color="blue"
-          isLoading={loading}
-        />
-        <StatCard
-          label={t('dashboard.pendingTasks')}
-          value={stats.pending_tasks}
-          icon={<CheckSquare className="h-6 w-6 text-emerald-400" />}
-          color="emerald"
-          isLoading={loading}
-        />
-        <StatCard
-          label={t('dashboard.activeProjects')}
-          value={stats.active_projects}
-          icon={<BarChart className="h-6 w-6 text-violet-400" />}
-          color="violet"
-          isLoading={loading}
-        />
-      </div>
+      {loading && <p>{t('loading')}...</p>}
+      
+      {dashboardData && !loading && (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">{t('dashboard.total_tasks')}</CardTitle>
+              <Briefcase className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{dashboardData.total_tasks}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">{t('dashboard.unresolved_tasks')}</CardTitle>
+              <Clock className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{dashboardData.unresolved_tasks}</div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
-      <div className="rounded-2xl border border-white/10 bg-dark-card/60 p-6 shadow-lg backdrop-blur-lg">
-        <h2 className="text-xl font-bold text-dark-text">{t('dashboard.activityFeed')}</h2>
-        {loading ? (
-            <p className="text-dark-text-secondary mt-2">Loading recent emails...</p>
-        ) : (
-            <ul className="mt-4 space-y-4">
-                {emails.map(email => (
-                    <li key={email.id} className="p-3 rounded-lg bg-dark-primary/50">
-                        <p className="font-semibold text-dark-text">{email.subject}</p>
-                        <p className="text-sm text-dark-text-secondary">From: {email.sender}</p>
-                        <p className="mt-1 text-sm text-dark-text">{email.summary}</p>
-                    </li>
-                ))}
-            </ul>
+      <div className="grid gap-6 md:grid-cols-2">
+        {dashboardData && !loading && (
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('dashboard.tasks_by_status')}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="count" fill="#8884d8" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
         )}
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('dashboard.upcoming_events')}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <CalendarWidget />
+          </CardContent>
+        </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+            <CardTitle>{t('dashboard.activity_feed')}</CardTitle>
+        </CardHeader>
+        <CardContent>
+            <ActivityFeed />
+        </CardContent>
+      </Card>
+
     </div>
   );
 };

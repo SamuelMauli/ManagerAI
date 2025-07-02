@@ -6,22 +6,29 @@ import Emails from './pages/Emails';
 import Tasks from './pages/Tasks';
 import Calendar from './pages/Calendar';
 import { UIProvider } from './context/UIContext';
+import CalendarPage from './pages/CalendarPage';
+import ReportsPage from './pages/ReportsPage';
 
 function App() {
   return (
-    <UIProvider>
-      <Router>
-        <Routes>
-          <Route element={<Layout />}>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/chat" element={<Chat />} />
-            <Route path="/emails" element={<Emails />} />
-            <Route path="/tasks" element={<Tasks />} />
-            <Route path="/calendar" element={<Calendar />} />
-          </Route>
-        </Routes>
-      </Router>
-    </UIProvider>
+    <Router>
+      <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+        <div className="flex h-screen bg-background text-foreground">
+          {isAuthenticated && <Sidebar />}
+          <main className="flex-1 overflow-y-auto">
+            {isAuthenticated && <Header />}
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+              <Route path="/chat" element={<PrivateRoute><Chat /></PrivateRoute>} />
+              <Route path="/calendar" element={<PrivateRoute><CalendarPage /></PrivateRoute>} />
+              <Route path="/reports" element={<PrivateRoute><ReportsPage /></PrivateRoute>} />
+              <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
+            </Routes>
+          </main>
+        </div>
+      </ThemeProvider>
+    </Router>
   );
 }
 

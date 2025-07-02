@@ -1,79 +1,63 @@
+// frontend/src/services/api.js
+
 import axios from 'axios';
 
-const api = axios.create({
-  baseURL: 'http://localhost:8000/api',
+const apiClient = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1',
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// --- CHAT ---
-// Adicionada a função para enviar mensagens ao chat
-export const postChatMessage = (message) => {
-  return api.post('/chat', { message });
+apiClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+export default {
+  // Auth
+  login: (credentials) => apiClient.post('/auth/login', credentials),
+  getMe: () => apiClient.get('/users/me'),
+
+  // Chat
+  postChatMessage: (message) => apiClient.post('/chat', { message }),
+
+  // --- ROTAS RESTAURADAS E ANTIGAS ---
+  
+  // YouTrack (incluindo Settings)
+  getYoutrackProjects: () => apiClient.get('/youtrack/projects'),
+  syncYoutrack: () => apiClient.post('/youtrack/sync'),
+  getYouTrackSettings: () => apiClient.get('/settings/youtrack'), // Supondo esta rota
+  saveYouTrackSettings: (settings) => apiClient.post('/settings/youtrack', settings), // Supondo esta rota
+  
+  // Tasks
+  getTasks: (params) => apiClient.get('/tasks', { params }),
+  getFilterData: () => apiClient.get('/tasks/filters'), // Supondo esta rota
+
+  // Google & Email (incluindo Settings)
+  getGoogleAuthUrl: () => apiClient.get('/google/auth-url'),
+  handleGoogleCallback: (code) => apiClient.get(`/google/callback?code=${code}`),
+  syncGoogleEmails: () => apiClient.post('/google/sync-emails'),
+  getSyncedEmails: () => apiClient.get('/google/emails'),
+  getEmailSettings: () => apiClient.get('/settings/email'), // Supondo esta rota
+  saveEmailSettings: (settings) => apiClient.post('/settings/email', settings), // Supondo esta rota
+
+  // --- NOVAS ROTAS ---
+
+  // Jobs
+  syncCalendar: () => apiClient.post('/jobs/calendar/sync'),
+  runYouTrackJob: () => apiClient.post('/jobs/youtrack/sync'), // Mapeando para a rota de sync
+  runEmailJob: () => apiClient.post('/jobs/email/sync'), // Mapeando para a rota de sync
+
+  // Dashboard
+  getProjectDashboard: (projectId) => apiClient.get(`/dashboard/project/${projectId}`),
+
+  // Calendar
+  getCalendarEvents: () => apiClient.get('/calendar/events'), // Supondo esta rota
+
+  // Reports
+  generateTasksByProjectReport: (data) => apiClient.post('/reports/tasks-by-project', data),
 };
-
-// --- DASHBOARD ---
-// Fetches dashboard statistics
-export const getDashboardStats = () => {
-  return api.get('/dashboard/stats');
-};
-
-// Adicionada a função para buscar e-mails sumarizados
-export const getSummarizedEmails = () => {
-  return api.get('/emails/summarized'); 
-};
-
-
-// --- TASKS ---
-// Fetches the list of tasks with optional filters
-export const getTasks = (filters = {}) => {
-  // Remove chaves vazias para não poluir a URL
-  const cleanedFilters = Object.fromEntries(
-    Object.entries(filters).filter(([_, v]) => v != null && v !== '')
-  );
-  const params = new URLSearchParams(cleanedFilters);
-  return api.get(`/tasks?${params.toString()}`);
-};
-
-// Fetches the filter data for the tasks page
-export const getFilterData = () => {
-  return Promise.all([
-    api.get('/projects'),
-    api.get('/tasks/assignees'),
-    api.get('/tasks/statuses'),
-  ]);
-};
-
-// --- SETTINGS & JOBS ---
-// Saves YouTrack settings
-export const saveYouTrackSettings = (settings) => {
-  return api.post('/settings/youtrack', settings);
-};
-
-// Fetches YouTrack settings
-export const getYouTrackSettings = () => {
-  return api.get('/settings/youtrack');
-};
-
-// Saves Email settings
-export const saveEmailSettings = (settings) => {
-  return api.post('/settings/gmail', settings);
-};
-
-// Fetches Email settings
-export const getEmailSettings = () => {
-  return api.get('/settings/gmail');
-};
-
-// Runs the YouTrack synchronization job
-export const runYouTrackJob = () => {
-  return api.post('/jobs/youtrack/sync');
-};
-
-// Runs the Email synchronization job
-export const runEmailJob = () => {
-  return api.post('/jobs/email/sync');
-};
-
-export default api;
