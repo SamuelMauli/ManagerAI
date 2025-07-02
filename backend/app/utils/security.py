@@ -21,6 +21,13 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30))
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+# Adicione estas duas funções:
+def verify_password(plain_password: str, hashed_password: str):
+    return pwd_context.verify(plain_password, hashed_password)
+
+def get_password_hash(password: str):
+    return pwd_context.hash(password)
+
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/google")
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):

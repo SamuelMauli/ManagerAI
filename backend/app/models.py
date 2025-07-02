@@ -1,7 +1,7 @@
-from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime
+import datetime
+from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey, Text 
 from sqlalchemy.orm import relationship
 from .database import Base
-import datetime
 
 class User(Base):
     __tablename__ = "users"
@@ -43,3 +43,19 @@ class CalendarEvent(Base):
     end_time = Column(DateTime)
     user_id = Column(Integer, ForeignKey("users.id"))
     user = relationship("User")
+
+class Email(Base):
+    __tablename__ = "emails"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    email_id = Column(String(255), unique=True, index=True) # ID do email no Gmail - Aumente se necessário
+    thread_id = Column(String(255), index=True) # ID da thread do email no Gmail
+    subject = Column(String(500)) # Assunto do email
+    sender = Column(String(255)) # Remetente do email
+    snippet = Column(Text) # Trecho do email - Mude para Text
+    body = Column(Text) # Corpo do email - Mude para Text
+    received_at = Column(DateTime, default=datetime.datetime.utcnow)
+    is_read = Column(Boolean, default=False)
+
+    owner = relationship("User", back_populates="emails")

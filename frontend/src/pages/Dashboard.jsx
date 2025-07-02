@@ -66,7 +66,7 @@ const Dashboard = () => {
             ))}
           </ul>
         ) : (
-          <p className="py-8 text-center text-muted-foreground">Nenhum e-mail não lido. Caixa de entrada limpa! ✨</p>
+          <p className="py-8 text-center text-muted-foreground">Nenhum e-mail não lido. Caixa de entrada limpa!</p>
         )}
       </CardContent>
     </Card>

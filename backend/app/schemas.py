@@ -1,4 +1,5 @@
-from pydantic import BaseModel
+import datetime
+from pydantic import BaseModel, EmailStr
 from typing import Optional, List
 from datetime import datetime
 
@@ -42,14 +43,29 @@ class ReportResponse(BaseModel):
 class ChatResponse(BaseModel):
     content: str
 
-class Task(BaseModel):
-    id: int
+class TaskBase(BaseModel):
     title: str
-    status: Optional[str]
-    project_id: Optional[str]
-    assignee: Optional[str]
+    description: Optional[str] = None
+    due_date: Optional[datetime] = None
+    completed: bool = False
+
+class TaskCreate(TaskBase):
+    pass
+
+class TaskUpdate(TaskBase):
+    # Permite que todos os campos sejam opcionais para atualização parcial
+    title: Optional[str] = None
+    description: Optional[str] = None
+    due_date: Optional[datetime] = None
+    completed: Optional[bool] = None
+
+class Task(TaskBase):
+    id: int
+    user_id: int
+    created_at: datetime
+
     class Config:
-        orm_mode = True
+        from_attributes = True # Ou orm_mode = True para Pydantic V1
 
 class CalendarEvent(BaseModel):
     id: str
@@ -58,3 +74,37 @@ class CalendarEvent(BaseModel):
     end_time: datetime
     class Config:
         orm_mode = True
+
+class EmailBase(BaseModel):
+    email_id: str
+    thread_id: str
+    subject: Optional[str] = None
+    sender: str
+    snippet: Optional[str] = None
+    body: Optional[str] = None
+    is_read: bool = False
+
+class EmailCreate(EmailBase):
+    pass
+
+class Email(EmailBase):
+    id: int
+    user_id: int
+    received_at: datetime # Mude de datetime.datetime para apenas datetime
+
+    class Config:
+        from_attributes = True
+
+# Esquema para EmailUnread (ajuste conforme necessário para exibir na lista)
+class EmailUnread(BaseModel):
+    id: int
+    email_id: str
+    thread_id: str
+    subject: Optional[str] = None
+    sender: str
+    snippet: Optional[str] = None
+    received_at: datetime # Mude de datetime.datetime para apenas datetime
+    is_read: bool
+
+    class Config:
+        from_attributes = True
