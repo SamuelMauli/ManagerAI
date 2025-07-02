@@ -1,4 +1,3 @@
-// frontend/src/pages/Login.jsx
 import React, { useEffect } from 'react';
 import { useGoogleLogin } from '@react-oauth/google';
 import { useNavigate } from 'react-router-dom';
@@ -13,26 +12,19 @@ const Login = () => {
   const { t } = useTranslation();
 
   useEffect(() => {
-    // Se já houver um token, redireciona para o painel
     if (localStorage.getItem('token')) {
       navigate('/dashboard');
     }
   }, [navigate]);
 
-  // Função para lidar com o sucesso do login no Google
   const handleGoogleLoginSuccess = async (tokenResponse) => {
     try {
-      // Envia o 'code' para o backend
       const { data } = await api.post('/auth/google', {
         code: tokenResponse.code,
       });
 
-      // Salva o token JWT no localStorage
       localStorage.setItem('token', data.access_token);
-      
-      // Configura o cabeçalho de autorização para futuras requisições
       api.defaults.headers.common['Authorization'] = `Bearer ${data.access_token}`;
-      
       toast.success(t('login.success', 'Login bem-sucedido!'));
       navigate('/dashboard');
 
@@ -42,10 +34,9 @@ const Login = () => {
     }
   };
 
-  // Hook da biblioteca do Google para iniciar o fluxo de login
   const login = useGoogleLogin({
     onSuccess: handleGoogleLoginSuccess,
-    flow: 'auth-code', // Essencial para este fluxo
+    flow: 'auth-code',
     onError: () => toast.error(t('login.error', 'Falha no login com o Google.')),
   });
 
