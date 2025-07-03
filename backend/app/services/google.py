@@ -3,7 +3,7 @@ import datetime
 import os
 import re
 from typing import Dict, Optional, Tuple, List, Any
-from email.message import EmailMessage # Adicionar esta importação
+from email.message import EmailMessage
 
 from google.auth.transport.requests import Request
 from google.auth.exceptions import RefreshError as HttpAccessTokenRefreshError
@@ -69,6 +69,7 @@ def exchange_code_for_credentials(code: str) -> Optional[Tuple[Dict[str, Any], C
         return None
 
 
+
 def refresh_access_token_if_needed(db: Session, user: models.User) -> bool:
     if not user.refresh_token:
         return False
@@ -104,7 +105,6 @@ def refresh_access_token_if_needed(db: Session, user: models.User) -> bool:
         db.commit()
         return False
 
-
 def sync_google_emails(db: Session, user_id: int):
     user = crud.get_user(db, user_id=user_id)
     if not (user and user.access_token):
@@ -127,6 +127,13 @@ def sync_google_emails(db: Session, user_id: int):
         service: Resource = build('gmail', 'v1', credentials=credentials)
         print(f"Iniciando sincronização de e-mails para: {user.email}")
         
+        existing_email_ids = set(
+            db.query(models.Email.google_email_id)
+            .filter(models.Email.user_id == user.id)
+            .all()
+        )
+        existing_email_ids = {id[0] for id in existing_email_ids} 
+
         results = service.users().messages().list(userId='me', maxResults=50).execute()
         messages = results.get('messages', [])
 
@@ -137,8 +144,9 @@ def sync_google_emails(db: Session, user_id: int):
         new_emails_to_add = []
         for msg in messages:
             msg_id = msg['id']
-            if crud.get_email_by_google_id(db, google_email_id=msg_id, user_id=user.id):
-                continue
+            
+            if msg_id in existing_email_ids:
+                continue 
 
             msg_full = service.users().messages().get(userId='me', id=msg_id, format='full').execute()
             
@@ -175,6 +183,7 @@ def sync_google_emails(db: Session, user_id: int):
         print(f"Ocorreu um erro na API do Gmail: {error}")
     except Exception as e:
         print(f"Ocorreu um erro inesperado ao sincronizar e-mails: {e}")
+
 
 # NOVO: Função para enviar e-mails
 def send_email(db: Session, user: models.User, email_data: schemas.EmailSendRequest) -> Dict[str, Any]:

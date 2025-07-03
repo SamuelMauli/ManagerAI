@@ -1,13 +1,11 @@
 import datetime
 from sqlalchemy.orm import Session
-from typing import Dict, Any, List
-from typing import List, Optional
+from typing import Dict, Any, List, Optional
 from sqlalchemy import desc
+from sqlalchemy.orm import Session
+from . import models, schemas
 
-from . import models, schemas # Certifique-se de que models e schemas são importados
 
-
-# --- Funções CRUD para Usuários (User) ---
 def get_user(db: Session, user_id: int):
     """Busca um usuário pelo ID."""
     return db.query(models.User).filter(models.User.id == user_id).first()
@@ -101,21 +99,22 @@ def mark_email_as_read(db: Session, email_id: int):
         db.refresh(db_email)
     return db_email
 
-def get_emails_by_thread_id(db: Session, user_id: int, thread_id: str):
-    """Retorna e-mails de uma thread específica."""
+def get_emails_by_thread_id(db: Session, user_id: int, thread_id: str) -> List[models.Email]:
+    """
+    Retorna todos os e-mails de uma thread específica para um determinado usuário.
+    """
     return db.query(models.Email).filter(
         models.Email.user_id == user_id,
         models.Email.thread_id == thread_id
     ).order_by(models.Email.received_at).all()
 
 
-# --- Funções CRUD para Tarefas (Task) ---
 def create_user_task(db: Session, task: schemas.TaskCreate, user_id: int):
     """Cria uma nova tarefa para um usuário."""
     db_task = models.Task(
-        **task.model_dump(), # Use model_dump() para Pydantic V2
+        **task.model_dump(), 
         user_id=user_id,
-        created_at=datetime.datetime.utcnow() # Define a data de criação
+        created_at=datetime.datetime.utcnow() 
     )
     db.add(db_task)
     db.commit()
@@ -132,7 +131,7 @@ def get_task(db: Session, task_id: int):
 
 def update_task(db: Session, db_task: models.Task, task_in: schemas.TaskUpdate):
     """Atualiza uma tarefa existente."""
-    update_data = task_in.model_dump(exclude_unset=True) # Use model_dump() para Pydantic V2
+    update_data = task_in.model_dump(exclude_unset=True) 
     for key, value in update_data.items():
         setattr(db_task, key, value)
     db.add(db_task)
