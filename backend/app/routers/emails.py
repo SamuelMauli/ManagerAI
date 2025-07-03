@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, status
 from sqlalchemy.orm import Session
 from typing import List
+from sqlalchemy import desc
 
 from .. import crud, schemas, models
 from ..dependencies import get_db, get_current_user
-from ..services import google as google_service 
+from ..services import google as google_service
 from .. import crud, models, schemas
 from ..database import get_db
 from ..dependencies import get_current_user
@@ -17,21 +18,6 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-@router.get("/unread", response_model=List[schemas.Email])
-def get_unread_emails(
-    db: Session = Depends(get_db),
-    current_user: models.User = Depends(get_current_user)
-):
-    """
-    Retorna uma lista de e-mails não lidos para o usuário autenticado.
-    """
-    unread_emails = db.query(models.Email).filter(
-        models.Email.user_id == current_user.id,
-        models.Email.is_read == False
-    ).order_by(models.Email.received_at.desc()).limit(10).all()
-    
-    return unread_emails
-
 @router.post("/sync", status_code=status.HTTP_202_ACCEPTED)
 async def sync_emails_endpoint(background_tasks: BackgroundTasks, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     """
@@ -42,7 +28,7 @@ async def sync_emails_endpoint(background_tasks: BackgroundTasks, db: Session = 
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="User not authenticated with Google or access token missing."
         )
-    background_tasks.add(google_service.sync_google_emails, db, current_user.id)
+    background_tasks.add_task(google_service.sync_google_emails, db, current_user.id)
     return {"message": "Sincronização de e-mails iniciada em segundo plano."}
 
 @router.get("/", response_model=List[schemas.Email])
@@ -51,7 +37,7 @@ def read_emails(
     current_user: models.User = Depends(get_current_user)
 ):
     """
-    Retorna a lista de e-mails sincronizados para o usuário logado.
+    Retorna la lista de e-mails sincronizados para o usuário logado.
     """
     emails = crud.get_emails_by_user(db, user_id=current_user.id, skip=skip, limit=limit)
     return emails

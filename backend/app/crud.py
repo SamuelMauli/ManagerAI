@@ -2,6 +2,7 @@ import datetime
 from sqlalchemy.orm import Session
 from typing import Dict, Any, List
 from typing import List, Optional
+from sqlalchemy import desc
 
 from . import models, schemas # Certifique-se de que models e schemas são importados
 
@@ -33,7 +34,7 @@ def get_or_create_user(db: Session, google_info: Dict[str, Any], credentials: Di
         db_user.name = google_info.get("name")
         db_user.picture_url = google_info.get("picture")
         db_user.access_token = credentials.get("token")
-        
+
         if not db_user.google_id:
             db_user.google_id = google_info.get("id")
         if credentials.get("refresh_token"):
@@ -50,7 +51,7 @@ def get_or_create_user(db: Session, google_info: Dict[str, Any], credentials: Di
             expires_at=credentials.get("expiry")
         )
         db.add(db_user)
-    
+
     db.commit()
     db.refresh(db_user)
     return db_user
