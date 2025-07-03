@@ -1,11 +1,15 @@
+// frontend/src/components/layout/Header.jsx
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '../ui/dropdown-menu';
 import { Button } from '../ui/button';
 import { CircleUser, Settings, LogOut } from 'lucide-react';
 import ThemeSwitcher from '../ui/ThemeSwitcher';
+import SettingsModal from '../ui/SettingsModal'; // Importe o SettingsModal
 
 const Header = () => {
   const navigate = useNavigate();
+  const [showSettingsModal, setShowSettingsModal] = useState(false); // Estado para o modal de configurações
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -27,7 +31,10 @@ const Header = () => {
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => {
+              // console.log("Configurações clicado!"); // Linha de depuração, pode remover
+              setShowSettingsModal(true);
+            }}>
               <Settings className="w-4 h-4 mr-2" />
               Configurações
             </DropdownMenuItem>
@@ -39,6 +46,11 @@ const Header = () => {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      {/* Renderiza o SettingsModal se showSettingsModal for true */}
+      {showSettingsModal && (
+        <SettingsModal show={showSettingsModal} onClose={() => setShowSettingsModal(false)} />
+      )}
     </header>
   );
 };

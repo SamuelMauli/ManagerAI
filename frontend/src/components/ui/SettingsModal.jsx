@@ -1,10 +1,17 @@
-import { Dialog, Transition, Menu } from '@headlessui/react';
+import { Dialog, Transition, Menu, Listbox } from '@headlessui/react'; // Adicionado Listbox
 import { Fragment, useState, useEffect } from 'react';
 import { useUI } from '../../context/UIContext';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
 import { X, Languages, Check, RefreshCw, Save, LoaderCircle } from 'lucide-react';
+
+// Seus componentes ShadCN que você quer manter:
+import { Button } from './button';
+import { Input } from './input';
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from './card';
+// Remova esta linha se você não a usa mais para outros Label no modal, ou adapte para uma label simples HTML:
+// import { Label } from './label'; 
 
 const supportedLanguages = [
   { code: 'en', name: 'English' },
@@ -30,29 +37,35 @@ export default function SettingsModal() {
   const [isSyncingYouTrack, setIsSyncingYouTrack] = useState(false);
   const [isSyncingEmail, setIsSyncingEmail] = useState(false);
 
-  const currentLanguage = supportedLanguages.find(lang => lang.code === i18n.language);
+  // Estado para o idioma (mantido para o Listbox)
+  const [currentLanguage, setCurrentLanguage] = useState(i18n.language);
+
+  // Funções dummy para simular chamadas de API (substitua pelas suas reais do api.js)
+  // Certifique-se de que estas funções existem e estão exportadas em `api.js`
+  const getYouTrackSettings = async () => api.getSettings(); // Ou a rota específica
+  const getEmailSettings = async () => api.getSettings(); // Ou a rota específica
+  const saveYouTrackSettings = async (data) => api.saveSettings(data);
+  const saveEmailSettings = async (data) => api.saveSettings(data);
+  const runYouTrackJob = async () => api.runYoutrackJob();
+  const runEmailJob = async () => api.syncEmails();
+
 
   useEffect(() => {
     if (isSettingsModalOpen) {
       const loadAllSettings = async () => {
         setIsLoading(true);
         try {
-          const [youtrackRes, emailRes] = await Promise.all([
-            getYouTrackSettings(),
-            getEmailSettings(),
-          ]);
+          const res = await api.getSettings(); // Supondo que `getSettings` traga todas as configurações
+          const settings = res.data;
 
-          if (youtrackRes.data) {
-            setYouTrackUrl(youtrackRes.data.url || '');
-            setYouTrackToken(youtrackRes.data.token || '');
-          }
-
-          if (emailRes.data) {
-            setEmailAddress(emailRes.data.email || '');
-          }
+          setYouTrackUrl(settings.youtrack_base_url || '');
+          setYouTrackToken(settings.youtrack_api_token || '');
+          setEmailAddress(settings.google_email || '');
+          // Não carregamos a senha por segurança, apenas o e-mail
+          // setEmailPassword(settings.google_app_password || ''); 
         } catch (error) {
           console.error('Could not load settings.', error);
-          toast.error(t('settings.errors.load'));
+          toast.error(t('settings.errors.load') || 'Falha ao carregar configurações.');
         } finally {
           setIsLoading(false);
         }
@@ -63,7 +76,7 @@ export default function SettingsModal() {
 
   const handleSaveYouTrack = async () => {
     setIsSavingYouTrack(true);
-    const promise = saveYouTrackSettings({ url: youTrackUrl, token: youTrackToken });
+    const promise = saveYouTrackSettings({ youtrack_base_url: youTrackUrl, youtrack_api_token: youTrackToken });
     
     toast.promise(promise, {
       loading: t('settings.savingYouTrack'),
@@ -78,21 +91,21 @@ export default function SettingsModal() {
 
     toast.promise(promise, {
       loading: t('jobs.syncing'),
-      success: t('jobs.successYouTrack'),
-      error: t('jobs.errors.syncYouTrack'),
+      success: t('jobs.youtrackJobSuccess'), // Corrigido para a chave correta de jobs
+      error: t('jobs.youtrackJobError'),    // Corrigido para a chave correta de jobs
     }).finally(() => setIsSyncingYouTrack(false));
   };
 
   const handleSaveEmail = async () => {
     setIsSavingEmail(true);
-    const promise = saveEmailSettings({ email: emailAddress, password: emailPassword });
+    const promise = saveEmailSettings({ google_email: emailAddress, google_app_password: emailPassword });
     
     toast.promise(promise, {
       loading: t('settings.savingEmail'),
       success: t('settings.successEmail'),
       error: t('settings.errors.saveEmail'),
     }).finally(() => {
-      setEmailPassword('');
+      setEmailPassword(''); // Limpa a senha após salvar por segurança
       setIsSavingEmail(false);
     });
   };
@@ -103,9 +116,15 @@ export default function SettingsModal() {
 
     toast.promise(promise, {
       loading: t('jobs.syncing'),
-      success: t('jobs.successEmail'),
-      error: t('jobs.errors.syncEmail'),
+      success: t('jobs.emailJobSuccess'), // Corrigido para a chave correta de jobs
+      error: t('jobs.emailJobError'),    // Corrigido para a chave correta de jobs
     }).finally(() => setIsSyncingEmail(false));
+  };
+
+  const handleLanguageChange = (lng) => {
+    i18n.changeLanguage(lng);
+    setCurrentLanguage(lng);
+    toast.success(t('settings.languageChangeSuccess') || 'Idioma alterado com sucesso!');
   };
 
   return (
@@ -173,30 +192,62 @@ export default function SettingsModal() {
                     
                     <div className="pt-4">
                       <h4 className="mb-2 text-md font-semibold text-dark-text">{t('settings.languageTitle')}</h4>
-                      <Menu as="div" className="relative inline-block w-full text-left">
-                        <div>
-                          <Menu.Button className="inline-flex w-full justify-between rounded-md border border-white/20 bg-dark-background px-4 py-2 text-sm font-medium text-dark-text hover:bg-dark-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-dark-accent">
-                            {currentLanguage?.name || t('settings.languagePlaceholder')}
-                            <Languages className="ml-2 -mr-1 h-5 w-5 text-dark-text-secondary" aria-hidden="true"/>
-                          </Menu.Button>
-                        </div>
-                        <Transition as={Fragment} enter="transition ease-out duration-100" enterFrom="transform opacity-0 scale-95" enterTo="transform opacity-100 scale-100" leave="transition ease-in duration-75" leaveFrom="transform opacity-100 scale-100" leaveTo="transform opacity-0 scale-95">
-                          <Menu.Items className="absolute bottom-full mb-2 w-full origin-bottom-right divide-y divide-gray-100/10 rounded-md bg-dark-primary shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                            <div className="px-1 py-1 ">
-                              {supportedLanguages.map((lang) => (
-                                <Menu.Item key={lang.code}>
-                                  {({ active }) => (
-                                    <button onClick={() => i18n.changeLanguage(lang.code)} className={`${active ? 'bg-dark-accent text-white' : 'text-dark-text'} group flex w-full items-center rounded-md px-2 py-2 text-sm`}>
-                                      {i18n.language === lang.code ? <Check className="mr-2 h-5 w-5" /> : <span className="mr-2 h-5 w-5" />}
-                                      {lang.name}
-                                    </button>
-                                  )}
-                                </Menu.Item>
-                              ))}
-                            </div>
-                          </Menu.Items>
-                        </Transition>
-                      </Menu>
+                      {/* Usando Listbox do Headless UI para seleção de idioma */}
+                      <Listbox value={currentLanguage.code} onChange={handleLanguageChange}>
+                        {({ open }) => (
+                          <div className="relative mt-1">
+                            <Listbox.Button className="relative w-full cursor-default rounded-md border border-white/20 bg-dark-background py-2 pl-3 pr-10 text-left text-dark-text shadow-sm focus:border-dark-accent focus:outline-none focus:ring-1 focus:ring-dark-accent sm:text-sm">
+                              <span className="block truncate">{currentLanguage?.name || t('settings.languagePlaceholder')}</span>
+                              <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                                <Languages className="h-5 w-5 text-dark-text-secondary" aria-hidden="true" />
+                              </span>
+                            </Listbox.Button>
+
+                            <Transition
+                              show={open}
+                              as={Fragment}
+                              leave="transition ease-in duration-100"
+                              leaveFrom="opacity-100"
+                              leaveTo="opacity-0"
+                            >
+                              <Listbox.Options className="absolute bottom-full mb-2 max-h-60 w-full overflow-auto rounded-md bg-dark-primary py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+                                {supportedLanguages.map((lang) => (
+                                  <Listbox.Option
+                                    key={lang.code}
+                                    className={({ active }) =>
+                                      `relative cursor-default select-none py-2 pl-10 pr-4 ${
+                                        active ? 'bg-dark-accent text-white' : 'text-dark-text'
+                                      }`
+                                    }
+                                    value={lang.code}
+                                  >
+                                    {({ selected, active }) => (
+                                      <>
+                                        <span
+                                          className={`block truncate ${
+                                            selected ? 'font-medium' : 'font-normal'
+                                          }`}
+                                        >
+                                          {lang.name}
+                                        </span>
+                                        {selected ? (
+                                          <span
+                                            className={`absolute inset-y-0 left-0 flex items-center pl-3 ${
+                                              active ? 'text-white' : 'text-dark-accent'
+                                            }`}
+                                          >
+                                            <Check className="h-5 w-5" aria-hidden="true" />
+                                          </span>
+                                        ) : null}
+                                      </>
+                                    )}
+                                  </Listbox.Option>
+                                ))}
+                              </Listbox.Options>
+                            </Transition>
+                          </div>
+                        )}
+                      </Listbox>
                     </div>
                   </>
                 )}

@@ -21,7 +21,16 @@
   },
   "emails": {
     "subtitle": "Organize, busque e gerencie suas caixas de entrada.",
-    "newButton": "Novo E-mail"
+    "newButton": "Novo E-mail",
+    "listDescription": "Lista de e-mails não lidos.",
+    "noUnreadEmails": "Nenhum e-mail não lido. Caixa de entrada em dia! 🎉",
+    "noSubject": "(Sem assunto)",
+    "markAsRead": "Marcar como lido",
+    "markAsReadSuccess": "E-mail marcado como lido com sucesso!",
+    "errors": {
+      "fetch": "Falha ao carregar os e-mails não lidos.",
+      "markAsRead": "Falha ao marcar e-mail como lido."
+    }
   },
   "tasks": {
     "subtitle": "Acompanhe suas atividades e projetos pendentes.",
@@ -29,28 +38,45 @@
   },
   "calendar": {
     "subtitle": "Veja e gerencie seus eventos e compromissos.",
-    "newButton": "Novo Evento"
+    "newButton": "Novo Evento",
+    "allDay": "Dia todo",
+    "previous": "Anterior",
+    "next": "Próximo",
+    "today": "Hoje",
+    "month": "Mês",
+    "week": "Semana",
+    "day": "Dia",
+    "agenda": "Agenda",
+    "date": "Data",
+    "time": "Hora",
+    "event": "Evento",
+    "createEventTitle": "Criar Novo Evento",
+    "errors": {
+      "fetchEvents": "Falha ao carregar os eventos do calendário."
+    }
   },
   "chat": {
     "placeholder": "Digite sua mensagem aqui...",
     "title": "Assistente Inteligente"
   },
   "settings": {
-      "languageTitle": "Idioma",
-      "languagePlaceholder": "Selecione o idioma",
-      "closeModal": "Fechar modal",
-      "youtrackTitle": "Configurações do YouTrack",
-      "youtrackUrlPlaceholder": "URL Base do YouTrack (ex: https://youtrack.example.com)",
-      "youtrackTokenPlaceholder": "Seu Token de Acesso Permanente do YouTrack",
-      "youtrackSaveSuccess": "Configurações do YouTrack salvas com sucesso!",
-      "youtrackSaveError": "Erro ao salvar as configurações do YouTrack.",
-      "emailTitle": "Configurações do Gmail",
-      "emailDescription": "Forneça o seu endereço de e-mail e uma senha de aplicativo gerada para o Gmail.",
-      "emailAddressPlaceholder": "Endereço de E-mail",
-      "emailCredentialsPlaceholder": "Senha de Aplicativo do Gmail",
-      "emailSaveSuccess": "Configurações de e-mail salvas com sucesso!",
-      "emailSaveError": "Erro ao salvar as configurações de e-mail.",
-      "saveButton": "Salvar Configurações"
+    "languageTitle": "Idioma",
+    "languageDescription": "Selecione o idioma da interface.",
+    "languagePlaceholder": "Selecione o idioma",
+    "languageChangeSuccess": "Idioma alterado com sucesso!",
+    "closeModal": "Fechar modal",
+    "youtrackTitle": "Configurações do YouTrack",
+    "youtrackUrlPlaceholder": "URL Base do YouTrack (ex: https://youtrack.example.com)",
+    "youtrackTokenPlaceholder": "Seu Token de Acesso Permanente do YouTrack",
+    "youtrackSaveSuccess": "Configurações do YouTrack salvas com sucesso!",
+    "youtrackSaveError": "Erro ao salvar as configurações do YouTrack.",
+    "emailTitle": "Configurações do Gmail",
+    "emailDescription": "Forneça o seu endereço de e-mail e uma senha de aplicativo gerada para o Gmail.",
+    "emailAddressPlaceholder": "Endereço de E-mail",
+    "emailCredentialsPlaceholder": "Senha de Aplicativo do Gmail",
+    "emailSaveSuccess": "Configurações de e-mail salvas com sucesso!",
+    "emailSaveError": "Erro ao salvar as configurações de e-mail.",
+    "saveButton": "Salvar Configurações"
   },
   "jobs": {
     "youtrackTitle": "Sincronização do YouTrack",
@@ -62,10 +88,14 @@
     "emailDescription": "Verifique e processe novos e-mails da sua conta configurada.",
     "emailUpdateButton": "Verificar Novos E-mails",
     "emailJobSuccess": "Job de sincronização de e-mail iniciado!",
-    "emailJobError": "Erro ao iniciar o job de e-mail."
+    "emailJobError": "Erro ao iniciar o job de e-mail.",
+    "syncing": "Sincronizando..."
   },
   "common": {
     "featureComingSoon": "Este recurso está em desenvolvimento e estará disponível em breve.",
-    "contentPlaceholder": "O conteúdo desta seção será exibido aqui."
-  }
+    "contentPlaceholder": "O conteúdo desta seção será exibido aqui.",
+    "cancel": "Cancelar",
+    "save": "Salvar"
+  },
+  "loading": "Carregando"
 }

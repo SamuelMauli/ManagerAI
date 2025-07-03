@@ -18,7 +18,7 @@ const Dashboard = () => {
       try {
         const [userRes, emailsRes, calendarRes] = await Promise.all([
           api.get('/dashboard/'),
-          api.get('/emails/unread'),
+          api.get('/emails/unread'), 
           api.get('/calendar/today')
         ]);
         setUserData(userRes.data);
