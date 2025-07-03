@@ -3,11 +3,12 @@ import datetime
 import os
 import re
 from typing import Dict, Optional, Tuple, List, Any
+from email.message import EmailMessage # Adicionar esta importação
 
 from google.auth.transport.requests import Request
 from google.auth.exceptions import RefreshError as HttpAccessTokenRefreshError
 from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import Flow
+from google_auth_oauthlib.flow import Flow 
 from googleapiclient.discovery import build, Resource
 from googleapiclient.errors import HttpError
 from sqlalchemy.orm import Session
@@ -151,7 +152,7 @@ def sync_google_emails(db: Session, user_id: int):
             received_at = datetime.datetime.fromtimestamp(received_at_ts)
 
             email_schema = schemas.EmailCreate(
-                email_id=msg_id,
+                google_email_id=msg_id,
                 thread_id=msg['threadId'],
                 subject=subject,
                 sender=sender,
@@ -174,6 +175,56 @@ def sync_google_emails(db: Session, user_id: int):
         print(f"Ocorreu um erro na API do Gmail: {error}")
     except Exception as e:
         print(f"Ocorreu um erro inesperado ao sincronizar e-mails: {e}")
+
+# NOVO: Função para enviar e-mails
+def send_email(db: Session, user: models.User, email_data: schemas.EmailSendRequest) -> Dict[str, Any]:
+    if not refresh_access_token_if_needed(db, user):
+        raise Exception("Não foi possível enviar e-mail: problema com o token.")
+
+    try:
+        credentials = Credentials.from_authorized_user_info({
+            "token": user.access_token,
+            "refresh_token": user.refresh_token,
+            "client_id": settings.GOOGLE_CLIENT_ID,
+            "client_secret": settings.GOOGLE_CLIENT_SECRET,
+            "scopes": SCOPES # Certifique-se de que o escopo de envio ('https://www.googleapis.com/auth/gmail.send') esteja incluído em settings.GOOGLE_SCOPES
+        })
+        service: Resource = build('gmail', 'v1', credentials=credentials)
+
+        message = EmailMessage()
+        message['To'] = email_data.to
+        message['From'] = user.email # Remetente será o próprio usuário
+        message['Subject'] = email_data.subject
+        
+        if email_data.is_html:
+            message.set_content(email_data.body, subtype='html')
+        else:
+            message.set_content(email_data.body)
+
+        if email_data.in_reply_to_id:
+            message['In-Reply-To'] = email_data.in_reply_to_id
+        if email_data.thread_id:
+            message['References'] = email_data.thread_id # Usar References para threads existentes
+
+        # Codificar a mensagem para o formato base64url
+        encoded_message = base64.urlsafe_b64encode(message.as_bytes()).decode()
+
+        create_message = {
+            'raw': encoded_message,
+            'threadId': email_data.thread_id if email_data.thread_id else None
+        }
+        
+        sent_message = service.users().messages().send(userId='me', body=create_message).execute()
+        print(f"E-mail enviado! ID da Mensagem: {sent_message['id']}")
+        return sent_message
+
+    except HttpError as error:
+        print(f"Ocorreu um erro na API do Gmail ao enviar: {error}")
+        raise Exception(f"Falha ao enviar e-mail: {error}")
+    except Exception as e:
+        print(f"Ocorreu um erro inesperado ao enviar e-mail: {e}")
+        raise Exception(f"Erro inesperado ao enviar e-mail: {e}")
+
 
 def get_events_for_today(db: Session, user: models.User) -> List[Dict]:
     """
@@ -223,6 +274,94 @@ def get_events_for_today(db: Session, user: models.User) -> List[Dict]:
         
     return formatted_events
 
+# NOVO: Função para criar evento no calendário
+def create_calendar_event(db: Session, user: models.User, event_data: schemas.CalendarEventCreate) -> Dict[str, Any]:
+    if not refresh_access_token_if_needed(db, user):
+        raise Exception("Não foi possível criar evento: problema com o token.")
+    
+    try:
+        credentials = Credentials.from_authorized_user_info({
+            "token": user.access_token,
+            "refresh_token": user.refresh_token,
+            "client_id": settings.GOOGLE_CLIENT_ID,
+            "client_secret": settings.GOOGLE_CLIENT_SECRET,
+            "scopes": SCOPES # Certifique-se de que o escopo de calendário ('https://www.googleapis.com/auth/calendar.events') esteja incluído
+        })
+        service: Resource = build('calendar', 'v3', credentials=credentials)
+
+        event = {
+            'summary': event_data.summary,
+            'description': event_data.description,
+            'start': {
+                'dateTime': event_data.start_time.isoformat(),
+                'timeZone': event_data.time_zone,
+            },
+            'end': {
+                'dateTime': event_data.end_time.isoformat(),
+                'timeZone': event_data.time_zone,
+            },
+            'attendees': [{'email': att} for att in event_data.attendees] if event_data.attendees else [],
+            'reminders': {
+                'useDefault': True,
+            },
+        }
+
+        created_event = service.events().insert(calendarId='primary', body=event).execute()
+        print(f"Evento criado: {created_event.get('htmlLink')}")
+        return created_event
+
+    except HttpError as error:
+        print(f"Ocorreu um erro na API do Google Calendar ao criar evento: {error}")
+        raise Exception(f"Falha ao criar evento no calendário: {error}")
+    except Exception as e:
+        print(f"Ocorreu um erro inesperado ao criar evento: {e}")
+        raise Exception(f"Erro inesperado ao criar evento: {e}")
+
+# NOVO: Função para atualizar evento no calendário
+def update_calendar_event(db: Session, user: models.User, event_id: str, event_data: schemas.CalendarEventUpdate) -> Dict[str, Any]:
+    if not refresh_access_token_if_needed(db, user):
+        raise Exception("Não foi possível atualizar evento: problema com o token.")
+    
+    try:
+        credentials = Credentials.from_authorized_user_info({
+            "token": user.access_token,
+            "refresh_token": user.refresh_token,
+            "client_id": settings.GOOGLE_CLIENT_ID,
+            "client_secret": settings.GOOGLE_CLIENT_SECRET,
+            "scopes": SCOPES
+        })
+        service: Resource = build('calendar', 'v3', credentials=credentials)
+
+        # Primeiro, obtenha o evento existente para não sobrescrever campos não fornecidos
+        existing_event = service.events().get(calendarId='primary', eventId=event_id).execute()
+
+        # Atualiza apenas os campos fornecidos
+        if event_data.summary is not None:
+            existing_event['summary'] = event_data.summary
+        if event_data.description is not None:
+            existing_event['description'] = event_data.description
+        if event_data.start_time is not None:
+            existing_event['start']['dateTime'] = event_data.start_time.isoformat()
+            if event_data.time_zone is not None:
+                existing_event['start']['timeZone'] = event_data.time_zone
+        if event_data.end_time is not None:
+            existing_event['end']['dateTime'] = event_data.end_time.isoformat()
+            if event_data.time_zone is not None:
+                existing_event['end']['timeZone'] = event_data.time_zone
+        if event_data.attendees is not None:
+            existing_event['attendees'] = [{'email': att} for att in event_data.attendees]
+            
+        updated_event = service.events().update(calendarId='primary', eventId=event_id, body=existing_event).execute()
+        print(f"Evento atualizado: {updated_event.get('htmlLink')}")
+        return updated_event
+
+    except HttpError as error:
+        print(f"Ocorreu um erro na API do Google Calendar ao atualizar evento: {error}")
+        raise Exception(f"Falha ao atualizar evento no calendário: {error}")
+    except Exception as e:
+        print(f"Ocorreu um erro inesperado ao atualizar evento: {e}")
+        raise Exception(f"Erro inesperado ao atualizar evento: {e}")
+
 def search_drive_files(user: models.User, query: str, max_results: int = 10):
     """Busca arquivos no Google Drive do usuário."""
     if not user.access_token:
@@ -240,7 +379,7 @@ def search_drive_files(user: models.User, query: str, max_results: int = 10):
         results = service.files().list(
             q=f"name contains '{query}' and 'me' in owners and trashed=false",
             pageSize=max_results,
-            fields="nextPageToken, files(id, name, webViewLink, createdTime)"
+            fields="nextPageToken, files(id, name, webViewLink, createdTime, mimeType)" # Adicionado mimeType
         ).execute()
         
         items = results.get('files', [])
@@ -249,7 +388,9 @@ def search_drive_files(user: models.User, query: str, max_results: int = 10):
             
         return [
             {
+                "id": item['id'], # Adicionado ID
                 "name": item['name'],
+                "mime_type": item['mimeType'], # Adicionado mime_type
                 "link": item['webViewLink'],
                 "created_time": item['createdTime']
             } for item in items
@@ -257,3 +398,84 @@ def search_drive_files(user: models.User, query: str, max_results: int = 10):
     except Exception as e:
         print(f"Erro ao buscar arquivos no Google Drive: {e}")
         return f"Ocorreu um erro ao acessar o Google Drive: {e}"
+
+# NOVO: Função para obter o conteúdo de um arquivo do Google Drive
+def get_drive_file_content(db: Session, user: models.User, file_id: str) -> Optional[schemas.DriveFileContent]:
+    if not refresh_access_token_if_needed(db, user):
+        raise Exception("Não foi possível obter o conteúdo do arquivo: problema com o token.")
+    
+    try:
+        credentials = Credentials.from_authorized_user_info({
+            "token": user.access_token,
+            "refresh_token": user.refresh_token,
+            "client_id": settings.GOOGLE_CLIENT_ID,
+            "client_secret": settings.GOOGLE_CLIENT_SECRET,
+            "scopes": SCOPES # Certifique-se de que o escopo apropriado para Drive ('https://www.googleapis.com/auth/drive.readonly' ou 'https://www.googleapis.com/auth/drive') esteja incluído
+        })
+        service: Resource = build('drive', 'v3', credentials=credentials)
+
+        file_metadata = service.files().get(fileId=file_id, fields="name, mimeType").execute()
+        file_name = file_metadata.get('name')
+        mime_type = file_metadata.get('mimeType')
+
+        # Para documentos do Google Workspace (Docs, Sheets, Slides), é necessário exportar
+        if mime_type == 'application/vnd.google-apps.document':
+            # Exportar como texto simples ou HTML para processamento
+            request = service.files().export_media(fileId=file_id, mimeType='text/plain')
+        elif mime_type == 'application/vnd.google-apps.spreadsheet':
+            request = service.files().export_media(fileId=file_id, mimeType='text/csv') # Ou outro formato adequado
+        elif mime_type == 'application/vnd.google-apps.presentation':
+            request = service.files().export_media(fileId=file_id, mimeType='text/plain') # Ou outro formato adequado
+        elif mime_type.startswith('text/') or mime_type == 'application/pdf': # PDFs não podem ser exportados, mas podem ser baixados se o Drive API permitir (requer tratamento de PDF)
+             request = service.files().get_media(fileId=file_id)
+        else:
+            # Para outros tipos de arquivo, tentar baixar diretamente
+            request = service.files().get_media(fileId=file_id)
+
+        content = request.execute().decode('utf-8') # Decodificar para string
+
+        return schemas.DriveFileContent(file_id=file_id, file_name=file_name, mime_type=mime_type, content=content)
+
+    except HttpError as error:
+        print(f"Ocorreu um erro na API do Google Drive ao obter conteúdo do arquivo: {error}")
+        raise Exception(f"Falha ao obter conteúdo do arquivo do Drive: {error}")
+    except Exception as e:
+        print(f"Ocorreu um erro inesperado ao obter conteúdo do arquivo: {e}")
+        raise Exception(f"Erro inesperado ao obter conteúdo do arquivo: {e}")
+
+# NOVO: Função para criar arquivo no Google Drive
+def create_drive_file(db: Session, user: models.User, file_name: str, mime_type: str, content: str) -> Dict[str, Any]:
+    if not refresh_access_token_if_needed(db, user):
+        raise Exception("Não foi possível criar arquivo: problema com o token.")
+    
+    try:
+        credentials = Credentials.from_authorized_user_info({
+            "token": user.access_token,
+            "refresh_token": user.refresh_token,
+            "client_id": settings.GOOGLE_CLIENT_ID,
+            "client_secret": settings.GOOGLE_CLIENT_SECRET,
+            "scopes": SCOPES # Certifique-se de que o escopo apropriado para Drive ('https://www.googleapis.com/auth/drive') esteja incluído
+        })
+        service: Resource = build('drive', 'v3', credentials=credentials)
+
+        file_metadata = {
+            'name': file_name,
+            'mimeType': mime_type
+        }
+        media_body = {'mimeType': mime_type, 'body': content} # Content as bytes or string
+
+        created_file = service.files().create(
+            body=file_metadata,
+            media_body=content, # Passar o conteúdo aqui
+            fields='id, name, webViewLink, mimeType'
+        ).execute()
+
+        print(f"Arquivo criado no Drive: {created_file.get('webViewLink')}")
+        return created_file
+
+    except HttpError as error:
+        print(f"Ocorreu um erro na API do Google Drive ao criar arquivo: {error}")
+        raise Exception(f"Falha ao criar arquivo no Drive: {error}")
+    except Exception as e:
+        print(f"Ocorreu um erro inesperado ao criar arquivo: {e}")
+        raise Exception(f"Erro inesperado ao criar arquivo: {e}")

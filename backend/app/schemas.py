@@ -1,5 +1,5 @@
 import datetime
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from pydantic import BaseModel, EmailStr
 
 # ==============================================================================
@@ -86,7 +86,6 @@ class Email(EmailBase):
     class Config:
         from_attributes = True
 
-# --- CORREÇÃO AQUI: ADICIONANDO O SCHEMA DE VOLTA ---
 class EmailUnread(BaseModel):
     id: int
     google_email_id: str
@@ -99,7 +98,16 @@ class EmailUnread(BaseModel):
 
     class Config:
         from_attributes = True
-# ----------------------------------------------------
+
+# NOVO: Schema para envio de e-mail
+class EmailSendRequest(BaseModel):
+    to: str
+    subject: str
+    body: str
+    is_html: bool = False
+    # Opcional: para responder a um email específico
+    in_reply_to_id: Optional[str] = None 
+    thread_id: Optional[str] = None
 
 # ==============================================================================
 # Schemas de Eventos do Calendário
@@ -113,6 +121,43 @@ class CalendarEvent(BaseModel):
 
     class Config:
         from_attributes = True
+
+# NOVO: Schema para criação de evento no calendário
+class CalendarEventCreate(BaseModel):
+    summary: str
+    description: Optional[str] = None
+    start_time: datetime.datetime
+    end_time: datetime.datetime
+    time_zone: str = "America/Sao_Paulo" # Fuso horário padrão Curitiba
+    attendees: Optional[List[EmailStr]] = None
+
+# NOVO: Schema para atualização de evento no calendário
+class CalendarEventUpdate(BaseModel):
+    summary: Optional[str] = None
+    description: Optional[str] = None
+    start_time: Optional[datetime.datetime] = None
+    end_time: Optional[datetime.datetime] = None
+    time_zone: Optional[str] = None
+    attendees: Optional[List[EmailStr]] = None
+
+# ==============================================================================
+# Schemas de Arquivos do Drive
+# ==============================================================================
+
+# NOVO: Schema para representar um arquivo do Drive
+class DriveFile(BaseModel):
+    id: str
+    name: str
+    mime_type: str
+    web_view_link: str
+    created_time: datetime.datetime
+
+# NOVO: Schema para o conteúdo de um arquivo do Drive
+class DriveFileContent(BaseModel):
+    file_id: str
+    file_name: str
+    mime_type: str
+    content: str # Conteúdo do arquivo como string
 
 # ==============================================================================
 # Schemas de Configurações e Serviços

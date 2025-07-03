@@ -11,7 +11,10 @@ class Settings(BaseSettings):
         'openid,https://www.googleapis.com/auth/userinfo.email,'
         'https://www.googleapis.com/auth/userinfo.profile,'
         'https://www.googleapis.com/auth/gmail.readonly,'
-        'https://www.googleapis.com/auth/calendar.readonly'
+        'https://www.googleapis.com/auth/gmail.send,' # NOVO: Escopo para enviar e-mails
+        'https://www.googleapis.com/auth/calendar.readonly,'
+        'https://www.googleapis.com/auth/calendar.events,' # NOVO: Escopo para criar/editar eventos do calendário
+        'https://www.googleapis.com/auth/drive' # NOVO: Escopo para Drive (leitura/escrita). Ou 'drive.readonly'
     )
     
     # Chave para JWT
@@ -21,4 +24,3 @@ class Settings(BaseSettings):
 
 # Instância única que será usada em toda a aplicação
 settings = Settings()
-

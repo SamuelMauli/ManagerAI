@@ -6,7 +6,7 @@ import os
 from . import models
 from .database import engine
 # Supondo que seus routers estejam em app.routers
-from .routers import auth, calendar, dashboard, chat, tasks, reports, emails, settings as settings_router
+from .routers import auth, calendar, dashboard, chat, tasks, reports, emails, settings as settings_router, drive as drive_router # Adicionar drive_router
 
 # Esta linha cria as tabelas no banco de dados se elas não existirem
 models.Base.metadata.create_all(bind=engine)
@@ -36,6 +36,7 @@ app.include_router(tasks.router)
 app.include_router(reports.router)
 app.include_router(settings_router.router)
 app.include_router(emails.router)
+app.include_router(drive_router.router)
 
 
 @app.get("/")
