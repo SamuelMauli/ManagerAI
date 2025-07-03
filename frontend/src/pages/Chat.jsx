@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'react-hot-toast';
-import api from '../services/api'; // Certifique-se que o caminho está correto
+import api from '../services/api';
 
 import Message from '../components/chat/Message';
 import ChatInput from '../components/chat/ChatInput';
@@ -26,21 +26,20 @@ const Chat = () => {
     const userMessage = { role: 'user', content: input };
     setMessages(prev => [...prev, userMessage]);
     setIsLoading(true);
-    setContextMessage(t('chat.contextMessage')); // Mostra a mensagem de contexto
+    setContextMessage('');
 
     try {
-      // A API agora usa o serviço de IA contextual (RAG)
       const response = await api.postChatMessage(input);
-      const aiMessage = { role: 'ai', content: response.data }; // Ajuste conforme a resposta da sua API
+      const aiMessage = response.data;
       setMessages(prev => [...prev, aiMessage]);
     } catch (error) {
       console.error("Failed to get chat response:", error);
-      toast.error(t('chat.errors.response'));
-      const errorMessage = { role: 'ai', content: t('chat.errors.response') };
+      const errorMessageContent = error.response?.data?.detail || t('chat.errors.response');
+      toast.error(errorMessageContent);
+      const errorMessage = { role: 'ai', content: errorMessageContent };
       setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
-      setContextMessage(''); // Limpa a mensagem de contexto
     }
   };
 

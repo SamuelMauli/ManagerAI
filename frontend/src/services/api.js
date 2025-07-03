@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000',
+baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -23,7 +23,12 @@ export default {
   getCurrentUser: () => apiClient.get('/auth/me'),
 
   // Chat
-  postChatMessage: (message) => apiClient.post('/chat', { message }),
+  postChatMessage: (message) => {
+    return apiClient.post('/chat/', { message });
+  },
+
+  get: (endpoint) => apiClient.get(endpoint),
+  post: (endpoint, data) => apiClient.post(endpoint, data),
 
   // --- ROTAS RESTAURADAS E ANTIGAS ---
   
@@ -50,8 +55,6 @@ export default {
   markEmailAsRead: (emailId) => apiClient.post(`/emails/${emailId}/mark_as_read`),
   // Endpoint para buscar detalhes de um email específico
   getEmailDetails: (emailId) => apiClient.get(`/emails/${emailId}`),
-
-  // --- NOVAS ROTAS ---
 
   // Jobs
   syncCalendar: () => apiClient.post('/jobs/calendar/sync'),

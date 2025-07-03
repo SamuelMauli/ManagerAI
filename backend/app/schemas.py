@@ -143,3 +143,7 @@ class ReportResponse(BaseModel):
 
 class ChatResponse(BaseModel):
     content: str
+
+class ChatMessage(BaseModel):
+    role: str
+    content: str

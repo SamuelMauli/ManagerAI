@@ -8,7 +8,7 @@ async def get_youtrack_projects(base_url: str, token: str) -> List[Dict[str, Any
     }
     # Os campos podem variar dependendo da sua versão do YouTrack
     fields = "id,name,shortName"
-    url = f"{base_url}/api/admin/projects?fields={fields}"
+    url = f"{base_url}/admin/projects?fields={fields}"
     
     async with httpx.AsyncClient() as client:
         try:
@@ -30,7 +30,7 @@ async def get_youtrack_tasks(base_url: str, token: str, project_id: str) -> List
     # Campos customizados podem precisar ser adicionados
     fields = "id,summary,description,project(id,name),customFields(name,value(name,login))"
     query = f"project: {project_id}"
-    url = f"{base_url}/api/issues?fields={fields}&query={query}"
+    url = f"{base_url}/issues?fields={fields}&query={query}"
 
     async with httpx.AsyncClient() as client:
         try:

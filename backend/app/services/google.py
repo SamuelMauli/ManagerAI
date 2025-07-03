@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 
 from .. import crud, models, schemas
 from ..config import settings
+from .. import models
 
 SCOPES = settings.GOOGLE_SCOPES.split(',')
 
@@ -221,3 +222,38 @@ def get_events_for_today(db: Session, user: models.User) -> List[Dict]:
         })
         
     return formatted_events
+
+def search_drive_files(user: models.User, query: str, max_results: int = 10):
+    """Busca arquivos no Google Drive do usuário."""
+    if not user.access_token:
+        return "Usuário não autenticado."
+
+    creds = Credentials(
+        token=user.access_token,
+        refresh_token=user.refresh_token,
+        client_id=os.environ.get("GOOGLE_CLIENT_ID"),
+        client_secret=os.environ.get("GOOGLE_CLIENT_SECRET"),
+        token_uri="https://oauth2.googleapis.com/token"
+    )
+    try:
+        service = build('drive', 'v3', credentials=creds)
+        results = service.files().list(
+            q=f"name contains '{query}' and 'me' in owners and trashed=false",
+            pageSize=max_results,
+            fields="nextPageToken, files(id, name, webViewLink, createdTime)"
+        ).execute()
+        
+        items = results.get('files', [])
+        if not items:
+            return "Nenhum arquivo encontrado com esse termo."
+            
+        return [
+            {
+                "name": item['name'],
+                "link": item['webViewLink'],
+                "created_time": item['createdTime']
+            } for item in items
+        ]
+    except Exception as e:
+        print(f"Erro ao buscar arquivos no Google Drive: {e}")
+        return f"Ocorreu um erro ao acessar o Google Drive: {e}"

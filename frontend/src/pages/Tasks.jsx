@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 
 // Simula uma chamada de API
 const fetchTasksFromApi = async () => {
-  // No futuro, isso será uma chamada real: fetch('/api/tasks')
+  // No futuro, isso será uma chamada real: fetch('/tasks')
   return [
     { id: 1, title: 'Revisar design do novo App', status: 'Pendente' },
     { id: 2, title: 'Preparar apresentação para a reunião', status: 'Em Progresso' },

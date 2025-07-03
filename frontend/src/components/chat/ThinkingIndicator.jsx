@@ -11,7 +11,7 @@ const ThinkingIndicator = ({ contextMessage }) => {
         <div className="flex items-center gap-2">
             <LoaderCircle size={20} className="animate-spin text-muted-foreground" />
             <p className="text-sm italic text-muted-foreground">
-              {contextMessage || 'Assistant is thinking...'}
+              {contextMessage || 'Let me thinking...'}
             </p>
         </div>
       </div>

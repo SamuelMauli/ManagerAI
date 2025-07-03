@@ -3,9 +3,9 @@ import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
 import { format, parse, startOfWeek, getDay } from 'date-fns';
 import ptBR from 'date-fns/locale/pt-BR';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import api from '../services/api'; // Importe o serviço de API
+import api from '../services/api'; 
 import { useTranslation } from 'react-i18next';
-import { PlusCircle } from 'lucide-react'; // Ícone para o botão "Nova Tarefa"
+import { PlusCircle } from 'lucide-react';
 
 const locales = {
   'pt-BR': ptBR,
