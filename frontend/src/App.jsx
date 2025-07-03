@@ -9,20 +9,21 @@ import i18n from './i18n';
 import { UIProvider } from './context/UIContext';
 
 // Componentes
-import Layout from './components/layout/Layout';
+import Layout from './components/layout/Layout'; // Certifique-se que o caminho está correto
 import PrivateRoute from './components/auth/PrivateRoute';
 import SettingsModal from './components/ui/SettingsModal';
 
 // Páginas
-import Login from './pages/Login';
-import LoginCallback from './pages/LoginCallback';
 import Dashboard from './pages/Dashboard';
-import Chat from './pages/Chat';
 import Tasks from './pages/Tasks';
 import Emails from './pages/Emails';
 import CalendarPage from './pages/CalendarPage';
+import Chat from './pages/Chat';
 import ReportsPage from './pages/ReportsPage';
-
+import Login from './pages/Login';
+import GoogleAuthCallback from './pages/GoogleAuthCallback';
+import LoginCallback from './pages/LoginCallback';
+import DrivePage from './pages/DrivePage'; // Importe a nova página do Drive
 
 const App = () => {
     const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
@@ -37,25 +38,26 @@ const App = () => {
                         <Routes>
                             {/* Rotas Públicas */}
                             <Route path="/login" element={<Login />} />
+                            <Route path="/google/callback" element={<GoogleAuthCallback />} />
                             <Route path="/login/callback" element={<LoginCallback />} />
 
-                            {/* Rotas Privadas agrupadas sob o PrivateRoute */}
+                            {/* Rotas Privadas agrupadas sob o PrivateRoute e Layout */}
                             <Route element={<PrivateRoute />}>
-                                <Route element={<Layout />}>
-                                    <Route index element={<Navigate to="/dashboard" replace />} />
+                                <Route element={<Layout />}> {/* <-- Reintroduza o Layout AQUI! */}
+                                    <Route index element={<Navigate to="/dashboard" replace />} /> {/* Adicionado novamente */}
                                     <Route path="dashboard" element={<Dashboard />} />
-                                    <Route path="chat" element={<Chat />} />
                                     <Route path="tasks" element={<Tasks />} />
                                     <Route path="emails" element={<Emails />} />
                                     <Route path="calendar" element={<CalendarPage />} />
+                                    <Route path="chat" element={<Chat />} />
                                     <Route path="reports" element={<ReportsPage />} />
+                                    <Route path="drive" element={<DrivePage />} /> {/* Nova rota do Drive */}
                                 </Route>
                             </Route>
 
                             {/* Redireciona qualquer rota não encontrada para a raiz */}
-                            <Route path="*" element={<Navigate to="/" replace />} />
+                            <Route path="*" element={<Navigate to="/" replace />} /> {/* Adicionado novamente */}
                         </Routes>
-                        
                         <SettingsModal />
                     </Router>
                 </UIProvider>

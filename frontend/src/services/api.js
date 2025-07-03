@@ -1,73 +1,93 @@
 import axios from 'axios';
 
-const apiClient = axios.create({
-baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000',
-  headers: {
-    'Content-Type': 'application/json',
-  },
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
+const api = axios.create({
+    baseURL: API_URL,
+    headers: {
+        'Content-Type': 'application/json',
+    },
 });
 
-apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+api.interceptors.request.use(
+    (config) => {
+        const token = localStorage.getItem('accessToken');
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
 
-export default {
-  // Auth
-  login: (credentials) => apiClient.post('/auth/login', credentials),
-  register: (userData) => apiClient.post('/auth/register', userData),
-  googleAuthCallback: (code) => apiClient.post('/auth/google/callback', { code }),
-  getCurrentUser: () => apiClient.get('/auth/me'),
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response && error.response.status === 401) {
+            localStorage.removeItem('accessToken');
+            window.location.href = '/login';
+        }
+        return Promise.reject(error);
+    }
+);
 
-  // Chat
-  postChatMessage: (message) => {
-    return apiClient.post('/chat/', { message });
-  },
-
-  get: (endpoint) => apiClient.get(endpoint),
-  post: (endpoint, data) => apiClient.post(endpoint, data),
-
-  // --- ROTAS RESTAURADAS E ANTIGAS ---
-  
-  // YouTrack (incluindo Settings)
-  getYoutrackProjects: () => apiClient.get('/youtrack/projects'),
-  syncYoutrack: () => apiClient.post('/youtrack/sync'),
-  getYouTrackSettings: () => apiClient.get('/settings/youtrack'), // Supondo esta rota
-  saveYouTrackSettings: (settings) => apiClient.post('/settings/youtrack', settings), // Supondo esta rota
-  
-  // Tasks
-  getTasks: (params = {}) => apiClient.get('/tasks/', { params }), // Adicione esta linha
-  createTask: (taskData) => apiClient.post('/tasks/', taskData), // Adicione esta linha
-  updateTask: (taskId, taskData) => apiClient.put(`/tasks/${taskId}`, taskData), // Adicione esta linha
-  deleteTask: (taskId) => apiClient.delete(`/tasks/${taskId}`), // Adicione esta linha
-
-
-  // Google & Email (incluindo Settings)
-  syncEmails: () => apiClient.post('/emails/sync'),
-  // Endpoint para buscar e-mails do banco de dados
-  getSyncedEmails: () => apiClient.get('/emails/'),
-  // Endpoint para buscar e-mails não lidos
-  getUnreadEmails: () => apiClient.get('/emails/unread'),
-  // Endpoint para marcar e-mail como lido
-  markEmailAsRead: (emailId) => apiClient.post(`/emails/${emailId}/mark_as_read`),
-  // Endpoint para buscar detalhes de um email específico
-  getEmailDetails: (emailId) => apiClient.get(`/emails/${emailId}`),
-
-  // Jobs
-  syncCalendar: () => apiClient.post('/jobs/calendar/sync'),
-  runYouTrackJob: () => apiClient.post('/jobs/youtrack/sync'), // Mapeando para a rota de sync
-  runEmailJob: () => apiClient.post('/jobs/email/sync'), // Mapeando para a rota de sync
-
-  // Dashboard
-  getProjectDashboard: (projectId) => apiClient.get(`/dashboard/project/${projectId}`),
-
-  // Calendar
-  getCalendarEvents: () => apiClient.get('/calendar/events'), // Supondo esta rota
-
-  // Reports
-  generateTasksByProjectReport: (data) => apiClient.post('/reports/tasks-by-project', data),
+export const auth = {
+    googleLogin: (code) => api.post('/auth/google/callback', { code }),
+    getCurrentUser: () => api.get('/auth/me'),
 };
 
+export const dashboard = {
+    getDashboardSummary: () => api.get('/dashboard/summary'),
+    getUpcomingTasks: () => api.get('/dashboard/tasks/upcoming'),
+    getRecentEmails: () => api.get('/dashboard/emails/recent'),
+};
+
+export const tasks = {
+    getTasks: (status = null) => {
+        const params = status !== null ? { completed: status } : {};
+        return api.get('/tasks/', { params });
+    },
+    createTask: (taskData) => api.post('/tasks/', taskData),
+    updateTask: (taskId, taskData) => api.put(`/tasks/${taskId}`, taskData),
+    deleteTask: (taskId) => api.delete(`/tasks/${taskId}`),
+};
+
+export const emails = {
+    syncEmails: () => api.post('/emails/sync'),
+    getPaginatedEmails: (skip = 0, limit = 100) => api.get(`/emails/?skip=${skip}&limit=${limit}`),
+    getUnreadEmails: (skip = 0, limit = 100) => api.get(`/emails/unread?skip=${skip}&limit=${limit}`),
+    getEmailDetail: (emailId) => api.get(`/emails/${emailId}`),
+    markEmailAsRead: (emailId) => api.post(`/emails/${emailId}/mark_as_read`),
+    sendEmail: (emailData) => api.post('/emails/send', emailData),
+    getEmailThread: (threadId) => api.get(`/emails/thread/${threadId}`),
+};
+
+export const calendar = {
+    getTodayEvents: () => api.get('/calendar/today'),
+    getCalendarEvents: () => api.get('/calendar/events'),
+    createCalendarEvent: (eventData) => api.post('/calendar/events', eventData),
+    updateCalendarEvent: (eventId, eventData) => api.put(`/calendar/events/${eventId}`, eventData),
+};
+
+export const chat = {
+    sendMessage: (message) => api.post('/chat', { query: message }),
+};
+
+export const reports = {
+    generateReport: (projectId, prompt) => api.post('/reports', { project_id: projectId, user_prompt: prompt }),
+};
+
+export const settings = {
+    updateYouTrackSettings: (settingsData) => api.post('/settings/youtrack', settingsData),
+    updateEmailSettings: (settingsData) => api.post('/settings/email', settingsData),
+};
+
+export const drive = {
+    searchFiles: (query, maxResults = 10) => api.get(`/drive/files?query=${query}&max_results=${maxResults}`),
+    getFileContent: (fileId) => api.get(`/drive/files/${fileId}/content`),
+    createFile: (fileName, mimeType, content) => api.post('/drive/files', { file_name: fileName, mime_type: mimeType, content: content }),
+};
+
+export default api;
