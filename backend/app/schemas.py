@@ -1,6 +1,6 @@
 import datetime
 from typing import Optional, List, Dict, Any
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
 # ==============================================================================
 # Schemas de Autenticação
@@ -109,6 +109,19 @@ class EmailSendRequest(BaseModel):
     in_reply_to_id: Optional[str] = None 
     thread_id: Optional[str] = None
 
+class GoogleCallback(BaseModel):
+    code: str
+    scope: Optional[str] = None # The scope is now handled, but it's good to have it here
+
+class GoogleTokenCreate(BaseModel):
+    access_token: str
+    refresh_token: Optional[str] = None
+    expires_at: int # Correctly defined as an integer for the Unix timestamp
+    user_id: int
+
+    class Config:
+        from_attributes = True # Updated from orm_mode
+
 # ==============================================================================
 # Schemas de Eventos do Calendário
 # ==============================================================================
@@ -192,3 +205,43 @@ class ChatResponse(BaseModel):
 class ChatMessage(BaseModel):
     role: str
     content: str
+
+# ==============================================================================
+# Schemas para YouTrack
+# ==============================================================================
+
+class YoutrackProject(BaseModel):
+    """Representa um projeto no YouTrack."""
+    id: str
+    name: str
+    short_name: str = Field(..., alias='shortName')
+
+# NOVO: Schema para representar um Agile Board
+class YoutrackBoard(BaseModel):
+    id: str
+    name: str
+
+class YoutrackUser(BaseModel):
+    """Representa um usuário dentro de um campo customizado."""
+    name: str
+    login: str
+
+class YoutrackCustomFieldValue(BaseModel):
+    """Representa o valor de um campo customizado."""
+    name: Optional[str] = None
+    minutes: Optional[int] = None
+    # Adicionamos a capacidade de ter um usuário como valor
+    login: Optional[str] = None 
+
+class YoutrackCustomField(BaseModel):
+    """Representa um campo customizado de um issue."""
+    name: str
+    value: Optional[YoutrackCustomFieldValue | List[YoutrackCustomFieldValue] | YoutrackUser | Any]
+
+# Schema de Issue ATUALIZADO para mais detalhes
+class YoutrackIssue(BaseModel):
+    """Representa um issue (card) do YouTrack com mais detalhes."""
+    id: str
+    id_readable: str = Field(..., alias='idReadable')
+    summary: str
+    custom_fields: List[YoutrackCustomField] = Field(..., alias='customFields')

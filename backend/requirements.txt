@@ -14,3 +14,4 @@ google-generativeai
 httpx
 itsdangerous
 email-validator 
+httpx-oauth

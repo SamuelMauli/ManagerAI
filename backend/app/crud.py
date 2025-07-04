@@ -10,19 +10,44 @@ def get_user(db: Session, user_id: int):
     """Busca um usuário pelo ID."""
     return db.query(models.User).filter(models.User.id == user_id).first()
 
-def get_user_by_email(db: Session, email: str):
+def get_user_by_email(db: Session, email: str) -> models.User | None:
+    """Busca um usuário pelo email."""
     return db.query(models.User).filter(models.User.email == email).first()
 
-def create_user(db: Session, user: schemas.UserCreate, hashed_password: str):
-    """Cria um novo usuário."""
+def create_user(db: Session, user: schemas.UserCreate) -> models.User:
+    """
+    Cria um novo usuário a partir dos dados do Google.
+    Esta versão é para o fluxo OAuth e não requer senha.
+    """
     db_user = models.User(
         email=user.email,
-        hashed_password=hashed_password,
+        name=user.full_name, # Mapeia 'full_name' do schema para 'name' do modelo
+        picture_url=user.picture # Mapeia 'picture' do schema para 'picture_url' do modelo
     )
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
     return db_user
+
+def store_google_token(db: Session, token_data: schemas.GoogleTokenCreate):
+    """
+    ## NOVO ##
+    Armazena ou atualiza o token de acesso do Google para um usuário.
+    """
+    user = db.query(models.User).filter(models.User.id == token_data.user_id).first()
+    
+    if not user:
+        return None
+
+    user.access_token = token_data.access_token
+    user.refresh_token = token_data.refresh_token
+    
+    user.expires_at = datetime.datetime.fromtimestamp(token_data.expires_at, tz=datetime.timezone.utc)
+    
+    db.commit()
+    db.refresh(user)
+    
+    return user
 
 def get_or_create_user(db: Session, google_info: Dict[str, Any], credentials: Dict[str, Any]) -> models.User:
     user_email = google_info.get("email")
@@ -85,7 +110,8 @@ def get_email_by_id(db: Session, email_id: int):
 def get_email_by_google_id(db: Session, google_email_id: str, user_id: int):
     return db.query(models.Email).filter(models.Email.google_email_id == google_email_id, models.Email.user_id == user_id).first()
 
-def create_multiple_user_emails(db: Session, emails: List[schemas.EmailCreate], user_id: int):
+def create_multiple_user_emails(db: Session, emails: list[schemas.EmailCreate], user_id: int):
+    """Cria múltiplos e-mails para um usuário."""
     db_emails = [models.Email(**email.model_dump(), user_id=user_id) for email in emails]
     db.bulk_save_objects(db_emails)
     db.commit()

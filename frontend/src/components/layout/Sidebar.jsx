@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { Home, Bot, CheckCircle, Mail, Calendar, BarChart2 } from 'lucide-react';
+import { Home, Bot, CheckCircle, Mail, Calendar, BarChart2, FileText } from 'lucide-react';
 
 const navItems = [
   { to: '/dashboard', icon: Home, label: 'Dashboard' },
@@ -7,7 +7,7 @@ const navItems = [
   { to: '/tasks', icon: CheckCircle, label: 'Tarefas' },
   { to: '/emails', icon: Mail, label: 'Emails' },
   { to: '/calendar', icon: Calendar, label: 'Calendário' },
-  { to: '/reports', icon: BarChart2, label: 'Relatórios' },
+  { to: '/drive', icon: FileText, label: 'Drive' },
 ];
 
 const Sidebar = () => {

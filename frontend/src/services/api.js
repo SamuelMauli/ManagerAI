@@ -79,6 +79,14 @@ export const reports = {
     generateReport: (projectId, prompt) => api.post('/reports', { project_id: projectId, user_prompt: prompt }),
 };
 
+export const youtrack = {
+    getProjects: () => api.get('/youtrack/projects'),
+    getIssues: (projectId) => api.get(`/youtrack/issues/${projectId}`),
+    getBoards: (projectId) => api.get(`/youtrack/projects/${projectId}/boards`),
+    getIssues: (projectShortName) => api.get(`/youtrack/issues/${projectShortName}`),
+    getBoards: (projectId) => api.get(`/youtrack/projects/${projectId}/boards`),
+};
+
 export const settings = {
     updateYouTrackSettings: (settingsData) => api.post('/settings/youtrack', settingsData),
     updateEmailSettings: (settingsData) => api.post('/settings/email', settingsData),
