@@ -11,7 +11,6 @@ def get_user(db: Session, user_id: int):
     return db.query(models.User).filter(models.User.id == user_id).first()
 
 def get_user_by_email(db: Session, email: str) -> models.User | None:
-    """Busca um usuário pelo email."""
     return db.query(models.User).filter(models.User.email == email).first()
 
 def create_user(db: Session, user: schemas.UserCreate) -> models.User:
@@ -28,6 +27,44 @@ def create_user(db: Session, user: schemas.UserCreate) -> models.User:
     db.commit()
     db.refresh(db_user)
     return db_user
+
+def get_or_create_user_from_google(
+    db: Session, user_info: dict, token_data: dict
+) -> models.User:
+    user = get_user_by_email(db, email=user_info["email"])
+    
+    expires_at = datetime.datetime.utcnow() + datetime.timedelta(
+        seconds=token_data.get('expires_in', 3600)
+    )
+
+    if not user:
+        user = models.User(
+            email=user_info["email"],
+            name=user_info.get("name"),
+            picture_url=user_info.get("picture"),
+            google_id=user_info.get("id"),
+            access_token=token_data["access_token"],
+            refresh_token=token_data.get("refresh_token"),
+            expires_at=expires_at,
+            is_active=True
+        )
+        db.add(user)
+    else:
+        user.name = user_info.get("name")
+        user.picture_url = user_info.get("picture")
+        user.access_token = token_data["access_token"]
+        user.expires_at = expires_at
+        if token_data.get("refresh_token"):
+            user.refresh_token = token_data.get("refresh_token")
+    
+    db.commit()
+    db.refresh(user)
+    return user
+
+def get_google_token(db: Session, user_id: int) -> models.User | None:
+    """Retorna o usuário com seu token para ser usado pelos serviços do Google."""
+    return db.query(models.User).filter(models.User.id == user_id).first()
+
 
 def store_google_token(db: Session, token_data: schemas.GoogleTokenCreate):
     """

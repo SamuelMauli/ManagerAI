@@ -67,7 +67,7 @@ const Login = () => {
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="text-center space-y-2">
           <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-50">
-            Manager AI
+            NeuroDesk
           </h1>
           <CardDescription>
             Faça login com sua conta Google para continuar

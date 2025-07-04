@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str
     
     # Configurações de Autenticação do Google
+    GOOGLE_API_KEY: str
     GOOGLE_CLIENT_ID: str
     GOOGLE_CLIENT_SECRET: str
     GOOGLE_REDIRECT_URI: str

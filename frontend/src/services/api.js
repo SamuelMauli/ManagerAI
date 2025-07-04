@@ -72,7 +72,7 @@ export const calendar = {
 };
 
 export const chat = {
-    sendMessage: (message) => api.post('/chat', { query: message }),
+    sendMessage: (message, history) => api.post('/chat/', { message, history }),
 };
 
 export const reports = {

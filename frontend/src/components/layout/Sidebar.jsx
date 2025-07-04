@@ -20,7 +20,7 @@ const Sidebar = () => {
         <div className="flex items-center h-16 px-6 border-b">
           <NavLink to="/" className="flex items-center gap-2 font-semibold">
             <Bot className="w-6 h-6" />
-            <span>Manager.AI</span>
+            <span>NeuroDesk</span>
           </NavLink>
         </div>
         <nav className="flex-1 px-4 py-4">

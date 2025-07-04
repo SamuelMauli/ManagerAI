@@ -1,25 +1,28 @@
+# backend/app/services/gemini.py
+
 import google.generativeai as genai
-import os
-from dotenv import load_dotenv
+from ..config import settings
+# CORREÇÃO: Importa a variável com o nome correto
+from .tools import TOOL_CONFIG 
 
-load_dotenv()
+genai.configure(api_key=settings.GOOGLE_API_KEY)
 
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+# Define o modelo com as ferramentas que ele pode usar
+model = genai.GenerativeModel(
+    model_name='gemini-1.5-flash',
+    tools=TOOL_CONFIG # Passa a configuração de ferramentas no formato de dicionário
+)
 
-model = genai.GenerativeModel('gemini-1.5-flash')
-
-def get_chat_response(prompt: str) -> str:
+async def get_gemini_response_with_tools(prompt: str):
+    """
+    Envia o prompt para o Gemini e deixa o modelo decidir se deve
+    chamar uma função ou responder diretamente.
+    """
     try:
-        response = model.generate_content(prompt)
-        return response.text
+        chat = model.start_chat() 
+        response = await chat.send_message_async(prompt)
+        
+        return response.candidates[0].content
     except Exception as e:
-        print(f"Error calling Gemini API: {e}")
-        return "Desculpe, não consegui processar sua solicitação no momento."
-
-def generate_report(prompt: str) -> str:
-    try:
-        response = model.generate_content(prompt)
-        return response.text
-    except Exception as e:
-        print(f"Error calling Gemini API for report: {e}")
-        return "Erro ao gerar o relatório."
+        print(f"Erro ao chamar a API do Gemini: {e}")
+        return None

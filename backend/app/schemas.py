@@ -19,19 +19,16 @@ class TokenData(BaseModel):
 
 class UserBase(BaseModel):
     email: EmailStr
-    name: Optional[str] = None
-    picture_url: Optional[str] = None
+    full_name: Optional[str] = None
+    picture: Optional[str] = None
 
 class UserCreate(UserBase):
-    google_id: str
-    access_token: str
-    refresh_token: Optional[str] = None
-    expires_at: datetime.datetime
+    pass
 
 class User(UserBase):
     id: int
-    google_id: Optional[str] = None
-    
+    is_active: bool
+
     class Config:
         from_attributes = True
 
@@ -111,7 +108,6 @@ class EmailSendRequest(BaseModel):
 
 class GoogleCallback(BaseModel):
     code: str
-    scope: Optional[str] = None # The scope is now handled, but it's good to have it here
 
 class GoogleTokenCreate(BaseModel):
     access_token: str
@@ -191,6 +187,15 @@ class EmailSettings(BaseModel):
 # ==============================================================================
 # Schemas para Interações com IA (Chat/Reports)
 # ==============================================================================
+
+class ChatMessage(BaseModel):
+    role: str # 'user' ou 'ai'
+    content: str
+
+class ChatRequest(BaseModel):
+    message: str
+    # Opcional: para manter o contexto da conversa
+    history: Optional[List[ChatMessage]] = None
 
 class ReportRequest(BaseModel):
     project_id: str
