@@ -9,7 +9,7 @@ class Email(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
     google_email_id = Column(String(255), unique=True, index=True)
     thread_id = Column(String(255), index=True)
-    subject = Column(String(1024))
+    subject = Column(Text)
     sender = Column(String(512))
     snippet = Column(Text)
     body = Column(Text)

@@ -29,7 +29,6 @@ class Setting(Base):
     __tablename__ = "settings"
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
-    # CORREÇÃO: Adicionado comprimento
     key = Column(String(100), index=True)
     value = Column(Text, nullable=True)
     user = relationship("User", back_populates="settings")
@@ -37,12 +36,10 @@ class Setting(Base):
 class Task(Base):
     __tablename__ = "tasks"
     id = Column(Integer, primary_key=True, index=True)
-    # CORREÇÃO: Adicionado comprimento
     title = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
     due_date = Column(DateTime, nullable=True)
     completed = Column(Boolean, default=False)
-    # CORREÇÃO: Adicionado comprimento
     status = Column(String(100), nullable=True)
     project_id = Column(String(100), nullable=True)
     assignee = Column(String(255), nullable=True)
@@ -52,7 +49,6 @@ class Task(Base):
 
 class CalendarEvent(Base):
     __tablename__ = "calendar_events"
-    # CORREÇÃO: Adicionado comprimento
     id = Column(String(255), primary_key=True, index=True)
     summary = Column(Text, nullable=False)
     start_time = Column(DateTime)
@@ -64,11 +60,10 @@ class Email(Base):
     __tablename__ = "emails"
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
-    # CORREÇÃO: Adicionado comprimento
     google_email_id = Column(String(255), unique=True, index=True)
     thread_id = Column(String(255), index=True)
-    subject = Column(Text, nullable=True) # Text não precisa de comprimento
-    sender = Column(String(255))
+    subject = Column(Text, nullable=True)
+    sender = Column(String(512))
     snippet = Column(Text, nullable=True)
     body = Column(Text, nullable=True)
     is_read = Column(Boolean, default=False)
